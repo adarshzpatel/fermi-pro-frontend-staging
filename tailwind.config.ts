@@ -1,5 +1,6 @@
 import { nextui } from '@nextui-org/react'
 import type { Config } from 'tailwindcss'
+import {neutral} from 'tailwindcss/colors'
 
 const config: Config = {
   content: [
@@ -11,6 +12,9 @@ const config: Config = {
   darkMode: "class",
   theme: {
     extend: {
+      colors:{
+        gray:neutral
+      }
     },
   },
   plugins: [nextui({defaultTheme:'dark'})],

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import Navigation from "@/components/layout/Navigation";
 
-const jetbrain = JetBrains_Mono({ subsets: ["latin"] });
+const jetbrain = JetBrains_Mono({ subsets: ["latin"],weight:"variable" });
 
 export const metadata: Metadata = {
   title: "Fermi Pro",
@@ -16,7 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={jetbrain.className}>{children}</body>
+      <body className={"bg-gray-950 " + jetbrain.className}>
+      <Navigation/>
+        <main>{children}</main>
+      </body>
     </html>
   );
 }
