@@ -1,5 +1,5 @@
 "use client";
-import Navigation from "@/components/layout/Navigation";
+
 import StyledCard from "@/components/shared/StyledCard";
 import AccountData from "@/components/trade/AccountData";
 import Orderbook from "@/components/trade/Orderbook";
@@ -12,18 +12,11 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 export default function Home() {
   // Calculate screen innerHeigh in useSate
   const [mounted,setMounted] = useState(false)
-  const [rowHeight, setRowHeight] = useState(140);
   
   useEffect(()=>{
     setMounted(true)
   },[])
-  useEffect(() => {
-    setRowHeight((window.innerHeight-154)/5)
 
-  }, []);
-  useEffect(()=>{
-    console.log(rowHeight)
-  },[rowHeight])
 
   const ResponsiveReactGridLayout = useMemo(
     () => WidthProvider(Responsive),
@@ -76,10 +69,9 @@ export default function Home() {
 
   return (
     <>
-      <div>
+      <div className="min-h-screen">
         <ResponsiveReactGridLayout
-          margin={[16,16]}
-          rowHeight={rowHeight}
+          margin={[16,16]} 
           autoSize={true}
           className="layout"
           layouts={layouts}

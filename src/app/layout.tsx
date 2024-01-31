@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/layout/Navigation";
+import Providers from "@/components/layout/Providers";
+import AppLayout from "@/components/layout/AppLayout";
 
 const jetbrain = JetBrains_Mono({ subsets: ["latin"],weight:"variable" });
 
@@ -18,8 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={"bg-gray-950 " + jetbrain.className}>
-      <Navigation/>
-        <main>{children}</main>
+        <Providers>
+          <AppLayout>{children}</AppLayout>
+        </Providers>
       </body>
     </html>
   );

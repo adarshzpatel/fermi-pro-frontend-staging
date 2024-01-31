@@ -15,6 +15,10 @@ const config: Config = {
       colors:{
         gray:neutral
       }
+      ,
+      fontFamily:{
+        sans:['JetBrains Mono', 'sans-serif']
+      }
     },
   },
   plugins: [nextui({defaultTheme:'dark'})],

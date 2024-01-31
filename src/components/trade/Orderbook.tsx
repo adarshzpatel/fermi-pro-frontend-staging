@@ -8,7 +8,7 @@ const Orderbook = (props: Props) => {
   const asks = [];
   const bids = [];
   return (
-    <div id="orderbook" aria-label="orderbook" className="p-3">
+    <div id="orderbook" aria-label="orderbook" className="p-4">
       {/* Bids */}
       <div className="text-sm">
         <div className="flex text-gray-400 pb-1 justify-between">

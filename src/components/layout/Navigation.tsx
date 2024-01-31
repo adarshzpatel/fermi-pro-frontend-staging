@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import CustomWalletConnectButton from "./CustomConnectWalletButton";
 
 export default function Navigation() {
   return (
@@ -9,7 +10,7 @@ export default function Navigation() {
           href={"/"}
           className="font-semibold  flex-1 text-2xl  font-heading"
         >
-         ✨   FERMI
+          ✨ FERMI
         </Link>
         <div className="flex items-center gap-4">
           <Link
@@ -30,8 +31,10 @@ export default function Navigation() {
           >
             Trade
           </Link>
+          <div>
+            <CustomWalletConnectButton />
+          </div>
         </div>
-        <div>{/* <CustomWalletConnectButton /> */}</div>
       </nav>
     </header>
   );
