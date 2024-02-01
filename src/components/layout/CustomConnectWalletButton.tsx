@@ -1,5 +1,6 @@
 // import { useFermiStore } from "@/stores/fermiStore";
 import useSolBalance from "@/hooks/useSolBalance";
+import { useFermiStore } from "@/stores/fermiStore";
 import {
   Dropdown,
   DropdownItem,
@@ -9,17 +10,16 @@ import {
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
 import {
   useAnchorWallet,
-  useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbArrowsExchange2, TbCopy, TbLogout } from "react-icons/tb";
+import { toast } from "sonner";
 
 const CustomWalletConnectButton = () => {
   const connectedWallet = useAnchorWallet();
-  const { connection } = useConnection();
   const { disconnect } = useWallet();
   const { solBalance } = useSolBalance();
   const { setVisible: setModalVisible } = useWalletModal();
@@ -32,13 +32,15 @@ const CustomWalletConnectButton = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef<HTMLUListElement>(null);
 
-  // const connectClientWithWallet = useFermiStore(state => state.actions.connectClientWithWallet)
+  const connectClientWithWallet = useFermiStore(state => state.actions.connectClientWithWallet)
 
-  // useEffect(()=>{
-  //   if(connectedWallet){
-  //     connectClientWithWallet(connectedWallet)
-  //   }
-  // },[connectedWallet])
+  useEffect(()=>{
+    if(connectedWallet){
+      connectClientWithWallet(connectedWallet)
+    } else {
+      toast.error("Please connect your wallet!")
+    }
+  },[connectedWallet])
 
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {

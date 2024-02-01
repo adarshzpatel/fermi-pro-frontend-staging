@@ -2,26 +2,20 @@
 
 import StyledCard from "@/components/shared/StyledCard";
 import AccountData from "@/components/trade/AccountData";
+import MarketDetails from "@/components/trade/MarketDetails";
 import Orderbook from "@/components/trade/Orderbook";
 import TradeForm from "@/components/trade/TradeForm";
-import { Spinner } from "@nextui-org/react";
-import { use, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 
-
 export default function Home() {
-  // Calculate screen innerHeigh in useSate
-  const [mounted,setMounted] = useState(false)
   
-  useEffect(()=>{
-    setMounted(true)
-  },[])
-
-
   const ResponsiveReactGridLayout = useMemo(
     () => WidthProvider(Responsive),
     []
   );
+
 
   const layouts = {
     lg: [
@@ -61,17 +55,11 @@ export default function Home() {
     ],
   };
 
-  if(!mounted){
-    return <div className="screen-center">
-      <Spinner label="Loading..."/>
-    </div>
-  }
-
   return (
     <>
       <div className="min-h-screen">
         <ResponsiveReactGridLayout
-          margin={[16,16]} 
+          margin={[16, 16]}
           autoSize={true}
           className="layout"
           layouts={layouts}
@@ -82,19 +70,27 @@ export default function Home() {
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
         >
           <div key="trade-form">
-            <StyledCard><TradeForm/></StyledCard>
+            <StyledCard>
+              <TradeForm />
+            </StyledCard>
           </div>
           <div key="chart">
             <StyledCard> Chart</StyledCard>
           </div>
           <div key="orderbook">
-            <StyledCard><Orderbook/></StyledCard>
+            <StyledCard>
+              <Orderbook />
+            </StyledCard>
           </div>
           <div key="account-data">
-            <StyledCard><AccountData/></StyledCard>
+            <StyledCard>
+              <AccountData />
+            </StyledCard>
           </div>
           <div key="market-details">
-            <StyledCard> Market details</StyledCard>
+            <StyledCard>
+              <MarketDetails />
+            </StyledCard>
           </div>
         </ResponsiveReactGridLayout>
       </div>

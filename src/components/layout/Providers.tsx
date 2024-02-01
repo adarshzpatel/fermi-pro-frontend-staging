@@ -1,5 +1,5 @@
-"use client"
-import { NextUIProvider, Spinner } from "@nextui-org/react";
+"use client";
+import { NextUIProvider } from "@nextui-org/react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   ConnectionProvider,
@@ -13,7 +13,6 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
 import { useMemo, useState, useEffect } from "react";
-
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -37,7 +36,10 @@ const SolanaWalletProviders = ({ children }: ProviderProps) => {
 
   return (
     <>
-      <ConnectionProvider endpoint={endpoint} config={{commitment:'finalized'}}>
+      <ConnectionProvider
+        endpoint={endpoint}
+        config={{ commitment: "finalized" }}
+      >
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>{children}</WalletModalProvider>
         </WalletProvider>
@@ -51,9 +53,13 @@ const Providers = ({ children }: ProviderProps) => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
   if (!isMounted) {
-    return <div className="w-screen h-screen grid place-items-center"><Spinner size="lg"/></div>;
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        {/* <Spinner label="Loading..." /> */}
+        <h1 className="font-bold text-xl animate-pulse">FERMI</h1>
+      </div>
+    );
   }
   return (
     <SolanaWalletProviders>

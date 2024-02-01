@@ -1,16 +1,18 @@
+import { MARKETS } from "@/solana/constants";
+import { useFermiStore } from "@/stores/fermiStore";
 import {
   Button,
   Input,
   Link,
   Select,
   SelectItem,
-
   Tab,
   Tabs,
 } from "@nextui-org/react";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useMemo, useState } from "react";
 import { NumericFormat } from "react-number-format";
-import { toast } from "sonner";
+import MarketSelector from "../shared/MarketSelector";
+;
 
 type FormDataType = {
   size: string;
@@ -26,17 +28,18 @@ const DEFAULT_FORM_STATE: FormDataType = {
 
 function TradeForm() {
   const [formData, setFormData] = useState(DEFAULT_FORM_STATE);
+  
+  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  };
 
-  const handleFormSubmit = (e:FormEvent<HTMLFormElement>)=>{
-    e.preventDefault()
-    toast.success("Order placed successfully")
-    toast.error("Something went wrong")
-    toast.warning("Warning")
-    // toast.info("take this info")
-  }
-
+  
   return (
-    <form onSubmit={handleFormSubmit} className="flex flex-col p-4 justify-between h-full  ">
+    <form
+      onSubmit={handleFormSubmit}
+      className="flex flex-col p-4 justify-between h-full  "
+    >
+      <MarketSelector/>
       <Tabs
         onSelectionChange={(key) =>
           setFormData((state) => ({
@@ -44,7 +47,6 @@ function TradeForm() {
             side: key.toString() as "buy" | "sell",
           }))
         }
-        size="lg"
         color={formData.side === "buy" ? "primary" : "danger"}
         selectedKey={formData.side}
         className=" font-medium"
@@ -62,16 +64,13 @@ function TradeForm() {
           selectedKeys={["limit"]}
           disabledKeys={["market"]}
           unselectable="on"
-          size="lg"
           labelPlacement="outside"
           classNames={{
             trigger:
               "bg-gray-800  border-2 border-default-200 hover:border-default-400 active:border-default-400",
             label: "text-sm !text-gray-400",
-            popoverContent:
-              "bg-gray-800 rounded-md border-1 border-default-400  ",
           }}
-          radius="none"
+          // radius="none"
         >
           <SelectItem key="limit" textValue="Limit">
             Limit
@@ -92,8 +91,8 @@ function TradeForm() {
           name="price"
           required
           // isDisabled={processing}
-          radius="none"
-          size="lg"
+          // radius="none"
+
           variant="faded"
           labelPlacement="outside"
           classNames={{ label: "text-sm !text-gray-400" }}
@@ -111,13 +110,12 @@ function TradeForm() {
           displayType="input"
           placeholder="0.00"
           min={0}
-          size="lg"
           name="size"
           customInput={Input}
           label="Size"
           required
           // isDisabled={processing}
-          radius="none"
+          // radius="none"
           variant="faded"
           labelPlacement="outside"
           classNames={{ label: "text-sm !text-gray-400" }}
@@ -137,7 +135,6 @@ function TradeForm() {
         <Button
           type="submit"
           fullWidth
-          size="lg"
           radius="sm"
           // isLoading={processing}
           color={formData.side === "buy" ? "primary" : "danger"}
