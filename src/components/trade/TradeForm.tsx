@@ -1,61 +1,96 @@
-import { MARKETS } from "@/solana/constants";
 import { useFermiStore } from "@/stores/fermiStore";
 import {
   Button,
   Input,
-  Link,
   Select,
   SelectItem,
   Tab,
   Tabs,
+  useDisclosure,
 } from "@nextui-org/react";
-import React, { FormEvent, useMemo, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { NumericFormat } from "react-number-format";
 import MarketSelector from "../shared/MarketSelector";
-;
-
+import { toast } from "sonner";
+import { BN } from "@coral-xyz/anchor";
+import CreateAccountModal from "./CreateAccountModal";
 type FormDataType = {
   size: string;
   price: string;
-  side: "buy" | "sell";
+  side: "bid" | "ask";
 };
 
 const DEFAULT_FORM_STATE: FormDataType = {
   size: "0.00",
   price: "0.00",
-  side: "buy",
+  side: "bid",
 };
 
 function TradeForm() {
   const [formData, setFormData] = useState(DEFAULT_FORM_STATE);
+  const [processing, setProcessing] = useState(false);
+  const placeOrder = useFermiStore((s) => s.actions.placeOrder);
+  const oo = useFermiStore((s) => s.openOrders);
+  const {
+    isOpen: isCreateAccountModalOpen,
+    onOpen: openCreateAccountModal,
+    onClose: closeCreateAccountModal,
+  } = useDisclosure({ id: "createAccount" });
   
-  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setProcessing(true);
+    try {
+      // input validation
+      if(formData.size === DEFAULT_FORM_STATE.size || formData.price == DEFAULT_FORM_STATE.price) {
+        throw new Error("Size and price are required");
+      }
+      // check if open orders account exist
+      // if not, open create open orders account modal
+      console.log(oo)
+      if (!oo) {
+        openCreateAccountModal();
+        return;
+      }
+      // else place order
+
+      await placeOrder(
+        new BN(formData.price),
+        new BN(formData.size),
+        formData.side
+      );
+    } catch (err: any) {
+      const message = err?.message || "Failed to place order";
+      toast.error(message);
+      console.error("Error in placeOrder:", err);
+    } finally {
+      setFormData(DEFAULT_FORM_STATE);
+      setProcessing(false);
+    }
   };
 
-  
   return (
     <form
       onSubmit={handleFormSubmit}
       className="flex flex-col p-4 justify-between h-full  "
     >
-      <MarketSelector/>
+      <MarketSelector />
       <Tabs
         onSelectionChange={(key) =>
           setFormData((state) => ({
             ...state,
-            side: key.toString() as "buy" | "sell",
+            side: key.toString() as "bid" | "ask",
           }))
         }
-        color={formData.side === "buy" ? "primary" : "danger"}
+        color={formData.side === "bid" ? "primary" : "danger"}
         selectedKey={formData.side}
         className=" font-medium"
-        radius="md"
+        radius="sm"p
         classNames={{ tabList: "border border-gray-700" }}
         fullWidth
       >
-        <Tab title="Buy" key="buy" />
-        <Tab title="Sell" key="sell" />
+        <Tab title="Buy" key="bid" />
+        <Tab title="Sell" key="ask" />
       </Tabs>
       <div>
         <Select
@@ -70,7 +105,7 @@ function TradeForm() {
               "bg-gray-800  border-2 border-default-200 hover:border-default-400 active:border-default-400",
             label: "text-sm !text-gray-400",
           }}
-          // radius="none"
+          radius="sm"
         >
           <SelectItem key="limit" textValue="Limit">
             Limit
@@ -90,8 +125,8 @@ function TradeForm() {
           label="Price"
           name="price"
           required
-          // isDisabled={processing}
-          // radius="none"
+          isDisabled={processing}
+          radius="sm"
 
           variant="faded"
           labelPlacement="outside"
@@ -114,8 +149,8 @@ function TradeForm() {
           customInput={Input}
           label="Size"
           required
-          // isDisabled={processing}
-          // radius="none"
+          isDisabled={processing}
+          radius="sm"
           variant="faded"
           labelPlacement="outside"
           classNames={{ label: "text-sm !text-gray-400" }}
@@ -136,12 +171,16 @@ function TradeForm() {
           type="submit"
           fullWidth
           radius="sm"
-          // isLoading={processing}
-          color={formData.side === "buy" ? "primary" : "danger"}
+          isLoading={processing}
+          color={formData.side === "bid" ? "primary" : "danger"}
         >
           Place Order
         </Button>
       </div>
+      <CreateAccountModal
+        isOpen={isCreateAccountModalOpen}
+        closeModal={closeCreateAccountModal}
+      />
     </form>
   );
 }

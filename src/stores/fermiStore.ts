@@ -10,7 +10,7 @@ import {
 } from "@/solana/fermiClient";
 import { AnchorProvider, BN, Wallet } from "@coral-xyz/anchor";
 import { Commitment, Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { Link } from "@nextui-org/react";
+import { Link, select } from "@nextui-org/react";
 import { create } from "zustand";
 import { produce } from "immer";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -18,7 +18,10 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import EmptyWallet from "@/solana/utils/emptyWallet";
-import { checkOrCreateAssociatedTokenAccount } from "@/solana/utils/helpers";
+import {
+  Side,
+  checkOrCreateAssociatedTokenAccount,
+} from "@/solana/utils/helpers";
 import { FERMI_DEVNET_PROGRAM_ID, MARKETS } from "@/solana/constants";
 
 type FermiStore = {
@@ -34,7 +37,6 @@ type FermiStore = {
     orders: { clientId: string; id: string; lockedPrice: string }[] | undefined;
   };
   selectedMarket: {
-    name:string
     publicKey: PublicKey | undefined;
     current: MarketAccount | undefined;
     bids: LeafNode[] | null | undefined;
@@ -49,8 +51,9 @@ type FermiStore = {
       wallet: AnchorWallet,
       connection?: Connection
     ) => void;
-    fetchOpenOrders: () => Promise<void>;
+    fetchOpenOrders: (reloadMarket?:boolean) => Promise<void>;
     cancelOrderById: (id: string) => Promise<void>;
+    placeOrder: (price: BN, size: BN, side: "bid" | "ask") => Promise<void>;
     finalise: (
       maker: PublicKey,
       taker: PublicKey,
@@ -143,7 +146,7 @@ export const useFermiStore = create<FermiStore>()(
             const eventHeapAccount = await client.deserializeEventHeapAccount(
               new PublicKey(newMarket.eventHeap)
             );
-            
+
             const eventHeap =
               eventHeapAccount && parseEventHeap(client, eventHeapAccount);
 
@@ -155,6 +158,7 @@ export const useFermiStore = create<FermiStore>()(
               state.selectedMarket.eventHeap = eventHeap;
             });
 
+            await get().actions.fetchOpenOrders();  
             console.log("Market Updated Successfully");
           } catch (err: any) {
             console.log("Error in updateSelectedMarket:", err?.message);
@@ -323,6 +327,71 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.reloadMarket();
         },
+        placeOrder: async (price: BN, size: BN, side: "bid" | "ask") => {
+          const client = get().client;
+          const oo = get().openOrders;
+          const selectedMarket = get().selectedMarket;
+
+          if (!client) throw new Error("Client not found");
+          if (!oo.current || !oo.publicKey)
+            throw new Error("Open orders not found");
+          if (!selectedMarket.current || !selectedMarket.publicKey)
+            throw new Error("Market not found");
+
+          // generate client id  - number of open orders + 1
+          const clientOrderId = new BN((oo?.orders?.length ?? 0) + 1);
+
+          // build order args
+          const orderArgs = {
+            side: side === "bid" ? Side.Bid : Side.Ask,
+            priceLots: price,
+            maxBaseLots: size,
+            maxQuoteLotsIncludingFees: new BN(size).mul(new BN(price)),
+            clientOrderId,
+            orderType: { limit: {} },
+            expiryTimestamp: new BN(Math.floor(Date.now() / 1000) + 3600),
+            selfTradeBehavior: { decrementTake: {} }, // Options might include 'decrementTake', 'cancelProvide', 'abortTransaction', etc.
+            limit: 5,
+          };
+
+          // get user token account according to the side
+          // quote ata for bid, base ata for ask
+          let userTokenAccount;
+          if (side === "bid") {
+            userTokenAccount = new PublicKey(
+              await checkOrCreateAssociatedTokenAccount(
+                client.provider,
+                selectedMarket.current?.quoteMint,
+                client.walletPk
+              )
+            );
+          } else {
+            userTokenAccount = new PublicKey(
+              await checkOrCreateAssociatedTokenAccount(
+                client.provider,
+                selectedMarket.current?.baseMint,
+                client.walletPk
+              )
+            );
+          }
+
+          const [ix, signers] = await client.placeOrderIx(
+            oo.publicKey,
+            selectedMarket.publicKey,
+            selectedMarket.current,
+            selectedMarket.current.marketAuthority,
+            userTokenAccount,
+            null, // openOrdersAdmin
+            orderArgs,
+            [] // remainingAccounts
+          );
+          // Send transaction
+          await client.sendAndConfirmTransaction([ix], {
+            additionalSigners: signers,
+          });
+          await get().actions.reloadMarket();
+          await get().actions.fetchOpenOrders();
+        },
         fetchOpenOrders: async (reloadMarket: boolean = false) => {
           console.log("fetching open orders");
           const client = get().client;
@@ -351,14 +420,13 @@ export const useFermiStore = create<FermiStore>()(
             // parse orders
 
             if (orders) {
-              orders = orders.filter((i) => i.isFree === 0);
-              orders = orders.map((i) => ({
+              orders = orders.filter((i: any) => i.isFree === 0);
+              orders = orders.map((i: any) => ({
                 clientId: i.clientId.toString(),
                 lockedPrice: i.lockedPrice.toString(),
                 id: i.id.toString(),
               }));
             }
-            console.log("openOrdersAccount", orders);
             console.log("Fetched open orders Successfully");
             set((state) => {
               state.openOrders.publicKey = openOrdersAccountPk;

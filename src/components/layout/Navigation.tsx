@@ -10,7 +10,7 @@ export default function Navigation() {
           href={"/"}
           className="font-semibold  flex-1 text-2xl  font-heading"
         >
-          ✨ FERMI
+           FERMI.
         </Link>
         <div className="flex items-center gap-4">
           <Link

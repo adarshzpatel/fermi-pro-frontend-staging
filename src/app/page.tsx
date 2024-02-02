@@ -2,20 +2,18 @@
 
 import StyledCard from "@/components/shared/StyledCard";
 import AccountData from "@/components/trade/AccountData";
+import CreateAccountBanner from "@/components/trade/CreateAccountBanner";
 import MarketDetails from "@/components/trade/MarketDetails";
 import Orderbook from "@/components/trade/Orderbook";
 import TradeForm from "@/components/trade/TradeForm";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 
 export default function Home() {
-  
   const ResponsiveReactGridLayout = useMemo(
     () => WidthProvider(Responsive),
     []
   );
-
 
   const layouts = {
     lg: [

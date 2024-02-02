@@ -15,6 +15,7 @@ import { clusterApiUrl } from "@solana/web3.js";
 import { useMemo, useState, useEffect } from "react";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
+import FullScreenLoading from "../shared/FullScreenLoading";
 
 type ProviderProps = {
   children: React.ReactNode;
@@ -55,10 +56,7 @@ const Providers = ({ children }: ProviderProps) => {
   }, []);
   if (!isMounted) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center">
-        {/* <Spinner label="Loading..." /> */}
-        <h1 className="font-bold text-xl animate-pulse">FERMI</h1>
-      </div>
+      <FullScreenLoading/>
     );
   }
   return (

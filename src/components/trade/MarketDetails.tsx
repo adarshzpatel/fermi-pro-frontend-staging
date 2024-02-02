@@ -2,7 +2,7 @@ import useCurrentMarket from "@/hooks/useCurrentMarket";
 import { useFermiStore } from "@/stores/fermiStore";
 import { ScrollShadow, Spinner } from "@nextui-org/react";
 import React from "react";
-import Copyable, { CopyableText } from "../shared/Copyable";
+import { CopyableText } from "../shared/Copyable";
 
 type Props = {};
 
