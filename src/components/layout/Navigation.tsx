@@ -24,7 +24,7 @@ export default function Navigation() {
           </Link>
           <Link
             color="foreground"
-            href="/trade"
+            href="/"
             className={
               " rounded-full px-4 py-2  focus-within:outline-none  border-gray-600 bg-gray-800/75 hover:ring ring-gray-800/75 hover:bg-gray-700/80 focus:bg-gray-700/80  border shadow-lg hover:border-gray-400 text-gray-400 hover:text-gray-200 focus:text-gray-200 focus:border-gray-400  focus:ring-2  flex items-center justify-between cursor-pointer"
             }

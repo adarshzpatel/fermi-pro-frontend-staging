@@ -6,7 +6,7 @@ import { useEffect, useMemo } from "react";
 const useCurrentMarket = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const marketPdaParam = searchParams.get("market");
+  const marketPdaParam = searchParams?.get("market");
   const currentMarket = useFermiStore((s) => s.selectedMarket);
   const updateMarket = useFermiStore((s) => s.actions.updateMarket);
   const isMarketLoading = useFermiStore((s) => s.isMarketLoading);
@@ -50,6 +50,11 @@ const useCurrentMarket = () => {
     }
   }, [marketPdaParam]);
 
+  useEffect(()=>{
+    if(currentMarket?.publicKey){
+
+    }
+  },[currentMarket])
   return { currentMarket, marketName, isMarketLoading, updateMarket ,baseTokenName,quoteTokenName};
 };
 

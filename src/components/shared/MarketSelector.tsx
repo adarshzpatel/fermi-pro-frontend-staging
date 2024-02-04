@@ -13,6 +13,7 @@ const MarketSelector = () => {
   const [selectedKeys, setSelectedKeys] = useState([MARKETS[0].marketPda]);
 
   const changeMarket = async (marketPda: string) => {
+    if(!searchParams) return;
     console.log("Changing market to", marketPda);
     const params = new URLSearchParams(searchParams);
     params.set("market", marketPda);

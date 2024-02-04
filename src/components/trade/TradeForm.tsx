@@ -14,6 +14,7 @@ import MarketSelector from "../shared/MarketSelector";
 import { toast } from "sonner";
 import { BN } from "@coral-xyz/anchor";
 import CreateAccountModal from "./CreateAccountModal";
+
 type FormDataType = {
   size: string;
   price: string;
@@ -21,8 +22,8 @@ type FormDataType = {
 };
 
 const DEFAULT_FORM_STATE: FormDataType = {
-  size: "0.00",
-  price: "0.00",
+  size: "",
+  price: "",
   side: "bid",
 };
 
@@ -36,22 +37,27 @@ function TradeForm() {
     onOpen: openCreateAccountModal,
     onClose: closeCreateAccountModal,
   } = useDisclosure({ id: "createAccount" });
-  
+
+
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setProcessing(true);
     try {
       // input validation
-      if(formData.size === DEFAULT_FORM_STATE.size || formData.price == DEFAULT_FORM_STATE.price) {
+      if (
+        formData.size === DEFAULT_FORM_STATE.size ||
+        formData.price == DEFAULT_FORM_STATE.price
+      ) {
         throw new Error("Size and price are required");
       }
       // check if open orders account exist
       // if not, open create open orders account modal
-      console.log(oo)
-      if (!oo) {
-        openCreateAccountModal();
+
+      if (!oo.publicKey){ 
+        openCreateAccountModal()
         return;
-      }
+      } 
+
       // else place order
 
       await placeOrder(
@@ -64,7 +70,10 @@ function TradeForm() {
       toast.error(message);
       console.error("Error in placeOrder:", err);
     } finally {
-      setFormData(DEFAULT_FORM_STATE);
+      setFormData((s) => ({
+        ...DEFAULT_FORM_STATE,
+        side: s.size as "bid" | "ask",
+      }));
       setProcessing(false);
     }
   };
@@ -85,7 +94,7 @@ function TradeForm() {
         color={formData.side === "bid" ? "primary" : "danger"}
         selectedKey={formData.side}
         className=" font-medium"
-        radius="sm"p
+        radius="sm"
         classNames={{ tabList: "border border-gray-700" }}
         fullWidth
       >
@@ -119,7 +128,7 @@ function TradeForm() {
         <NumericFormat
           value={formData.price}
           displayType="input"
-          placeholder="0.00"
+          placeholder="0"
           min={0}
           customInput={Input}
           label="Price"
@@ -127,7 +136,6 @@ function TradeForm() {
           required
           isDisabled={processing}
           radius="sm"
-
           variant="faded"
           labelPlacement="outside"
           classNames={{ label: "text-sm !text-gray-400" }}
@@ -143,7 +151,7 @@ function TradeForm() {
         <NumericFormat
           value={formData.size}
           displayType="input"
-          placeholder="0.00"
+          placeholder="0"
           min={0}
           name="size"
           customInput={Input}

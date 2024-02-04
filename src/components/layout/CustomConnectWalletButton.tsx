@@ -31,9 +31,9 @@ const CustomWalletConnectButton = () => {
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef<HTMLUListElement>(null);
-
+  const currentMarket = useFermiStore(s => s.selectedMarket.publicKey)
   const connectClientWithWallet = useFermiStore(state => state.actions.connectClientWithWallet)
-
+  const fetchOpenOrders = useFermiStore(s => s.actions.fetchOpenOrders)
   useEffect(()=>{
     if(connectedWallet){
       connectClientWithWallet(connectedWallet)
@@ -41,6 +41,7 @@ const CustomWalletConnectButton = () => {
       toast.error("Please connect your wallet!")
     }
   },[connectedWallet])
+
 
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {

@@ -1,15 +1,12 @@
 import useCurrentMarket from "@/hooks/useCurrentMarket";
 import { BN } from "@coral-xyz/anchor";
 import { Skeleton } from "@nextui-org/react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
-type Props = {};
-
-const Orderbook = (props: Props) => {
+const Orderbook = () => {
   const {
     currentMarket: { bids, asks },
   } = useCurrentMarket();
-  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <div id="orderbook" aria-label="orderbook" className="p-4">
@@ -21,18 +18,15 @@ const Orderbook = (props: Props) => {
           <div>Price</div>
         </div>
         <div className="grid grid-cols-2 gap-1">
-          <div className="col-span-1 space-y-1 text-emerald-500 bg-emerald-500/10">
+          <div className="col-span-1 space-y-1 text-emerald-500 ">
             {bids
-              ? bids.map((item, i) => (
+              ? bids.map((item, i: number) => (
                   <div
-                    key={`bid-${
-                      item?.clientOrderId?.toString() +
-                      item?.key.toString().slice(0, 5)
-                    }`}
-                    className="flex justify-between"
+                  key={`bidc-${item.key.toString()}`}
+                    className="flex justify-between bg-emerald-500/10"
                   >
-                    <p>{new BN(item?.key).shrn(64).toString()}</p>
-                    <p>{item?.quantity?.toString()}</p>
+                    <p>{new BN(item.key).shrn(64).toString()}</p>
+                    <p>{item?.quantity.toString()}</p>
                   </div>
                 ))
               : [...Array(10)].map((_, i) => (
@@ -42,18 +36,15 @@ const Orderbook = (props: Props) => {
                   />
                 ))}
           </div>
-          <div className="col-span-1 space-y-1 text-rose-500">
+          <div className="col-span-1 space-y-1 text-rose-500 ">
             {asks
-              ? asks.map((item, i) => (
+              ? asks.map((item: any, i: number) => (
                   <div
-                    key={`ask-${
-                      item?.clientOrderId?.toString() +
-                      item?.key.toString().slice(0, 5)
-                    }`}
-                    className="flex justify-between"
+                    key={`ask-${item.key.toString()}`}
+                    className="flex justify-between bg-rose-500/10"
                   >
-                    <p>{item?.quantity?.toString()}</p>
-                    <p>{new BN(item?.key).shrn(64).toString()}</p>
+                    <p>{new BN(item.key).shrn(64).toString()}</p>
+                    <p>{item?.quantity.toString()}</p>
                   </div>
                 ))
               : [...Array(10)].map((_, i) => (

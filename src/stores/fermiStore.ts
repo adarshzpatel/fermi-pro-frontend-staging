@@ -1,5 +1,4 @@
 import {
-  BookSideAccount,
   EventHeapAccount,
   FillEvent,
   LeafNode,
@@ -8,9 +7,8 @@ import {
   OpenOrdersAccount,
   OutEvent,
 } from "@/solana/fermiClient";
-import { AnchorProvider, BN, Wallet } from "@coral-xyz/anchor";
+import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { Commitment, Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { Link, select } from "@nextui-org/react";
 import { create } from "zustand";
 import { produce } from "immer";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -51,7 +49,7 @@ type FermiStore = {
       wallet: AnchorWallet,
       connection?: Connection
     ) => void;
-    fetchOpenOrders: (reloadMarket?:boolean) => Promise<void>;
+    fetchOpenOrders: (reloadMarket?: boolean) => Promise<void>;
     cancelOrderById: (id: string) => Promise<void>;
     placeOrder: (price: BN, size: BN, side: "bid" | "ask") => Promise<void>;
     finalise: (
@@ -71,7 +69,7 @@ const initFermiClient = (provider: AnchorProvider) => {
     );
     toast.success("Transaction sent successfully", { description: txid });
   };
-  const txConfirmationCommitment: Commitment = "confirmed";
+  const txConfirmationCommitment: Commitment = "finalized";
   const opts = {
     postSendTxCallback,
     txConfirmationCommitment,
@@ -91,7 +89,7 @@ export const useFermiStore = create<FermiStore>()(
   subscribeWithSelector((_set, get) => {
     const connection = new Connection(ENDPOINT);
     const provider = new AnchorProvider(connection, emptyWallet, {
-      commitment: "confirmed",
+      commitment: "finalized",
     });
     const client = initFermiClient(provider);
     return {
@@ -158,8 +156,8 @@ export const useFermiStore = create<FermiStore>()(
               state.selectedMarket.eventHeap = eventHeap;
             });
 
-            await get().actions.fetchOpenOrders();  
             console.log("Market Updated Successfully");
+            // get().actions.fetchOpenOrders()
           } catch (err: any) {
             console.log("Error in updateSelectedMarket:", err?.message);
             set((state) => {
@@ -204,40 +202,8 @@ export const useFermiStore = create<FermiStore>()(
           }
         },
         reloadMarket: async () => {
-          const set = get().set;
-          const client = get().client;
-          const currentMarket = get().selectedMarket.current;
-          try {
-            if (!client) throw new Error("Client not initialized");
-            if (!currentMarket) throw new Error("No market selected");
-
-            const bidsAccount = await client.deserializeBookSide(
-              new PublicKey(currentMarket.bids)
-            );
-
-            const bids = bidsAccount && client.getLeafNodes(bidsAccount);
-            const asksAccount = await client.deserializeBookSide(
-              new PublicKey(currentMarket.asks)
-            );
-
-            const asks = asksAccount && client.getLeafNodes(asksAccount);
-
-            const eventHeapAccount = await client.deserializeEventHeapAccount(
-              new PublicKey(currentMarket.eventHeap)
-            );
-            const eventHeap =
-              eventHeapAccount && parseEventHeap(client, eventHeapAccount);
-
-            set((state) => {
-              state.selectedMarket.current = currentMarket;
-              state.selectedMarket.bids = bids;
-              state.selectedMarket.asks = asks;
-              state.selectedMarket.eventHeap = eventHeap;
-            });
-            console.log("Reloaded Market");
-          } catch (err) {
-            console.error("Error in reloadMarket:", err);
-          }
+          const updateMarket = get().actions.updateMarket;
+          updateMarket(get().selectedMarket.publicKey?.toString() ?? "");
         },
         updateConnection: (url: string) => {
           const set = get().set;
@@ -284,28 +250,21 @@ export const useFermiStore = create<FermiStore>()(
             maker: maker,
           };
 
-          const ix = await client.program.methods
-            .atomicFinalizeEvents(new BN(0))
-            .accounts(accounts)
-            .signers([])
-            .rpc();
-          console.log(ix);
+          const [ix, signers] = await client.createFinalizeEventsInstruction(
+            marketPublicKey,
+            market.marketAuthority,
+            market.eventHeap,
+            makerAtaPublicKey,
+            takerAtaPublicKey,
+            market.marketBaseVault,
+            market.marketQuoteVault,
+            maker,
+            slotsToConsume
+          );
 
-          // const [ix, signers] = await client.createFinalizeEventsInstruction(
-          //   marketPublicKey,
-          //   market.marketAuthority,
-          //   market.eventHeap,
-          //   makerAtaPublicKey,
-          //   takerAtaPublicKey,
-          //   market.marketBaseVault,
-          //   market.marketQuoteVault,
-          //   maker,
-          //   slotsToConsume
-          // );
-
-          // await client.sendAndConfirmTransaction([ix], {
-          //   additionalSigners: signers,
-          // });
+          await client.sendAndConfirmTransaction([ix], {
+            additionalSigners: signers,
+          });
         },
         cancelOrderById: async (id: string) => {
           console.group("Cancelling All orders");
@@ -472,7 +431,6 @@ export const parseEventHeap = (
           "FillEvent",
           Buffer.from([0, ...node.event.padding])
         );
-
         if (fillEvent.timestamp.toString() !== "0") {
           fillEvents.push({
             ...fillEvent,
