@@ -12,6 +12,6 @@ export type MarketType = {
 export const MARKETS: MarketType[] = [
   {
     name: "SOL/USDC",
-    marketPda: "5Eba9CxDqjuf84q7xuV69LwMDa9EEkNKBUxYPEEF6N1v",
+    marketPda: "DwMGLtUfo8L6x3bp6xk6r34Tvj6PCmGkeG4kVJ9us7Dx",
   },
 ];

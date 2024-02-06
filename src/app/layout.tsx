@@ -17,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={"bg-gray-950 " + jetbrain.className}>
+    <html suppressHydrationWarning={true} lang="en">
+      <body  className={"bg-gray-950 " + jetbrain.className}>
         <Providers>
           <AppLayout>{children}</AppLayout>
         </Providers>

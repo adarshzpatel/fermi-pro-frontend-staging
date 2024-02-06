@@ -13,27 +13,24 @@ import { PublicKey } from "@solana/web3.js";
 
 import React, { useMemo } from "react";
 import { toast } from "sonner";
+import OpenOrdersActionsCell from "./OpenOrdersActionsCell";
 
 const OpenOrdersTable = () => {
-  const orders = useFermiStore((s) => s.openOrders.orders) ?? [];
   const openOrders = useFermiStore((s) => s.openOrders);
-  const selectedMarket = useFermiStore((s) => s.selectedMarket);
-  const eventHeap = selectedMarket.eventHeap;
-  const finalise = useFermiStore((s) => s.actions.finalise);
-  const cancelOrderById = useFermiStore(
-    (state) => state.actions.cancelOrderById
-  );
+  const eventHeap = useFermiStore((s) => s.eventHeap);
 
   const canFinalise = useMemo(() => {
     let map: { [x: string]: any } = {};
     if (eventHeap != undefined && openOrders != undefined) {
       openOrders?.orders?.forEach((order) => {
         const match = eventHeap?.find(
-          (event: any) => event.makerClientOrderId.toString() === order.clientId
+          (event: any) =>
+            event.makerClientOrderId.toString() === order.clientOrderId,
         );
         if (match) map[order.id] = match;
       });
     }
+    console.log("can finalise map", map);
     return map;
   }, [openOrders, eventHeap]);
 
@@ -63,49 +60,20 @@ const OpenOrdersTable = () => {
           Actions
         </TableColumn>
       </TableHeader>
-      <TableBody items={orders}>
+      <TableBody
+        emptyContent={"No Orders to display."}
+        items={openOrders?.orders ?? []}
+      >
         {(item) => (
           <TableRow key={item.id}>
-            <TableCell>{item.clientId}</TableCell>
+            <TableCell>{item.clientOrderId}</TableCell>
             <TableCell>{item.id}</TableCell>
             <TableCell>{item.lockedPrice}</TableCell>
             <TableCell>
-              <div className="flex gap-2">
-                {/* {canFinalise[item.id] === true && ( */}
-                <Button
-                  onClick={() =>
-                    toast.promise(
-                      finalise(
-                        new PublicKey(
-                          "6rDnvxVYAg9DUYSAEP2pASDLHZ2fHxSkcx9BnfqSCsoj"
-                        ),
-                        new PublicKey(
-                          "HCqEBGByEeFS1HZZr1Aw8MmmAP3i9pHKJK7Kt3aSyDnt"
-                        ),
-                        new BN(0)
-                      )
-                    )
-                  }
-                  color="success"
-                  size="sm"
-                  variant="solid"
-                >
-                  Finalise
-                </Button>
-                {/* )} */}
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    toast.promise(cancelOrderById(item.id), {
-                      loading: "Cancelling",
-                      success: "Cancelled",
-                      error: "Error",
-                    })
-                  }
-                >
-                  Cancel
-                </Button>
-              </div>
+              <OpenOrdersActionsCell
+                finaliseEvent={canFinalise[item.id]}
+                orderId={item.id}
+              />
             </TableCell>
           </TableRow>
         )}

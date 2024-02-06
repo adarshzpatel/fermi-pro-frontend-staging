@@ -28,10 +28,7 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   const connectedWallet = useAnchorWallet();
   const { currentMarket } = useCurrentMarket();
   const client = useFermiStore((state) => state.client);
-  const fetchOpenOrders = useFermiStore(
-    (state) => state.actions.fetchOpenOrders
-  );
-
+  const fetchOpenOrders = useFermiStore((state) => state.fetchOpenOrders);
   const createOpenOrdersAccount = async () => {
     try {
       setProcessing(true);
@@ -41,22 +38,23 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
         throw new Error("Please connect your wallet");
       }
       if (!client) throw new Error("Client not initialized");
-
       if (!currentMarket?.publicKey) throw new Error("Market not selected");
-      console.log("connected:", connectedWallet.publicKey.toString());
-      console.log("clinet:", client.provider.wallet.publicKey.toString());
+
       const marketPublicKey = new PublicKey(currentMarket.publicKey);
       // const market = await client.deserializeMarketAccount(marketPublicKey);
       // if (!market) throw new Error("Market not found");
 
       // Check if openOrdersAccount exits
-      const openOrdersAccount = await client.findOpenOrdersForMarket(
+      const openOrdersAccounts = await client.findOpenOrdersForMarket(
         connectedWallet.publicKey,
-        marketPublicKey
+        marketPublicKey,
       );
 
-      if (openOrdersAccount.length > 0) {
-        console.log("OpenOrdersAccount already exists", openOrdersAccount);
+      if (openOrdersAccounts.length > 0) {
+        console.log(
+          "OpenOrdersAccount already exists",
+          JSON.stringify(openOrdersAccounts),
+        );
         return;
       }
 
@@ -72,14 +70,15 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
         accountName,
         connectedWallet.publicKey,
         null,
-        null
+        null,
       );
       console.log(client.walletPk);
       console.log({ ixs, openOrderPubKey });
       const tx = await client.sendAndConfirmTransaction(ixs);
       setTxHash(tx);
-      await fetchOpenOrders();
+      // await fetchOpenOrders();
       console.log("Created open orders account ", { tx });
+      await fetchOpenOrders();
       // closeModal();
     } catch (err: any) {
       const message = err?.message || "Failed to place order";
@@ -93,26 +92,26 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   return (
     <Modal
       isOpen={isOpen}
-      className="border border-default-200"
+      className="border-default-200 border"
       onClose={closeModal}
       backdrop="blur"
     >
       <ModalContent>
-        <ModalHeader className="p-6 font-heading">
+        <ModalHeader className="font-heading p-6">
           Create Open Orders Account
         </ModalHeader>
         <ModalBody className="relative pb-6">
           {txHash ? (
             <div className="flex flex-col  items-center justify-center">
               <IoMdCheckmarkCircleOutline className="h-16 w-16 text-green-400" />
-              <p className="text-xl mt-4 font-heading font-semibold">
+              <p className="font-heading mt-4 text-xl font-semibold">
                 Transaction Sent Successfully
               </p>
               <Link
-              showAnchorIcon
+                showAnchorIcon
                 target="_blank"
                 href={`https://solscan.io/tx/${txHash}?cluster=devnet`}
-                className="mb-4 text-sm flex flex-wrap justify-center"
+                className="mb-4 flex flex-wrap justify-center text-sm"
               >
                 Tx Hash : {txHash.slice(0, 8) + "..." + txHash.slice(-8)}{" "}
                 <span>{"( click to view in explorer )"}</span>

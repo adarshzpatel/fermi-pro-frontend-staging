@@ -1,6 +1,4 @@
-// import { useFermiStore } from "@/stores/fermiStore";
 import useSolBalance from "@/hooks/useSolBalance";
-import { useFermiStore } from "@/stores/fermiStore";
 import {
   Dropdown,
   DropdownItem,
@@ -8,18 +6,13 @@ import {
   DropdownTrigger,
 } from "@nextui-org/react";
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
-import {
-  useAnchorWallet,
-  useWallet,
-} from "@solana/wallet-adapter-react";
+import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbArrowsExchange2, TbCopy, TbLogout } from "react-icons/tb";
-import { toast } from "sonner";
 
 const CustomWalletConnectButton = () => {
-  const connectedWallet = useAnchorWallet();
   const { disconnect } = useWallet();
   const { solBalance } = useSolBalance();
   const { setVisible: setModalVisible } = useWalletModal();
@@ -31,17 +24,6 @@ const CustomWalletConnectButton = () => {
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef<HTMLUListElement>(null);
-  const currentMarket = useFermiStore(s => s.selectedMarket.publicKey)
-  const connectClientWithWallet = useFermiStore(state => state.actions.connectClientWithWallet)
-  const fetchOpenOrders = useFermiStore(s => s.actions.fetchOpenOrders)
-  useEffect(()=>{
-    if(connectedWallet){
-      connectClientWithWallet(connectedWallet)
-    } else {
-      toast.error("Please connect your wallet!")
-    }
-  },[connectedWallet])
-
 
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {
@@ -85,20 +67,20 @@ const CustomWalletConnectButton = () => {
     <>
       <Dropdown
         showArrow
-
         classNames={{
           base: "",
-          content: "bg-gray-900 ring ring-gray-700/25 border border-gray-700    border-gray-600",
+          content:
+            "bg-gray-900 ring ring-gray-700/25 border border-gray-700    border-gray-600",
           arrow: "",
         }}
       >
         {buttonState === "connected" ? (
-          <DropdownTrigger className="rounded-full px-4 py-2  focus-within:outline-none  border-gray-600 bg-gray-800/75 hover:ring ring-gray-800/75  border shadow-lg hover:bg-gray-700/80 focus:bg-gray-700/80 hover:border-gray-400 text-gray-400 hover:text-gray-200 focus:text-gray-200 focus:border-gray-400  focus:ring-2  flex items-center justify-between cursor-pointer">
-            <div className="flex gap-2 items-center">
-              <p className="font-medium hidden sm:block">
+          <DropdownTrigger className="flex cursor-pointer items-center  justify-between  rounded-full border border-gray-600 bg-gray-800/75  px-4 py-2 text-gray-400 shadow-lg ring-gray-800/75 focus-within:outline-none hover:border-gray-400 hover:bg-gray-700/80 hover:text-gray-200  hover:ring  focus:border-gray-400 focus:bg-gray-700/80 focus:text-gray-200 focus:ring-2">
+            <div className="flex items-center gap-2">
+              <p className="hidden font-medium sm:block">
                 {solBalance && (solBalance / 1000000000).toFixed(4) + " SOL "}
               </p>
-              <div className="h-4 w-[1px] bg-default-400"></div>
+              <div className="bg-default-400 h-4 w-[1px]"></div>
               <p className="">{content}</p>
             </div>
           </DropdownTrigger>
@@ -119,14 +101,13 @@ const CustomWalletConnectButton = () => {
               }
             }}
             aria-expanded={menuOpen}
-            className="rounded-full px-4 py-2  focus-within:outline-none  border-gray-600 bg-gray-800/75 hover:ring ring-gray-800/75  border shadow-lg hover:bg-gray-700/80 focus:bg-gray-700/80 hover:border-gray-400 text-gray-400 hover:text-gray-200 focus:text-gray-200 focus:border-gray-400  focus:ring-2  flex items-center justify-between cursor-pointer"
+            className="flex cursor-pointer items-center  justify-between  rounded-full border border-gray-600 bg-gray-800/75  px-4 py-2 text-gray-400 shadow-lg ring-gray-800/75 focus-within:outline-none hover:border-gray-400 hover:bg-gray-700/80 hover:text-gray-200  hover:ring  focus:border-gray-400 focus:bg-gray-700/80 focus:text-gray-200 focus:ring-2"
           >
             {content}
           </button>
         )}
         <DropdownMenu
           variant="faded"
-          
           aria-label="Wallet dropdown with options to change wallet and disconnect"
         >
           <DropdownItem
