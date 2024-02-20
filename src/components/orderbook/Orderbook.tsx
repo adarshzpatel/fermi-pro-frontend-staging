@@ -30,9 +30,9 @@ const Orderbook = (props: Props) => {
           </div>
         </div>
 
-        <Asks data={orderbook?.asks} />
+        <Asks data={orderbook?.asks ?? []} />
         <LastTradedPrice />
-        <Bids data={orderbook?.bids}/>
+        <Bids data={orderbook?.bids ?? []}/>
       </div>
     </>
   );

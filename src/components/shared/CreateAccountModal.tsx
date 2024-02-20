@@ -1,4 +1,4 @@
-import useCurrentMarket from "@/hooks/useCurrentMarket";
+
 import { useFermiStore } from "@/stores/fermiStore";
 import { BN } from "@coral-xyz/anchor";
 import {
@@ -26,7 +26,7 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   const [processing, setProcessing] = useState(false);
   const [txHash, setTxHash] = useState("");
   const connectedWallet = useAnchorWallet();
-  const { currentMarket } = useCurrentMarket();
+  const currentMarket = useFermiStore(s=>s.selectedMarket);
   const client = useFermiStore((state) => state.client);
   const fetchOpenOrders = useFermiStore(
     (state) => state.actions.fetchOpenOrders
