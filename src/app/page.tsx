@@ -92,17 +92,17 @@ export default function Home() {
 
   return (
     <>
-      <main className="h-screen bg-indigo-500 flex flex-col space-y-4  text-white p-4 bg-gradient">
+      <main className="h-screen bg-gradient-to-t from-primary-700 to-primary-500 flex flex-col space-y-4  text-white p-4 bg-gradient">
         <Navigation />
         {connectedWallet?.publicKey ? (
           loading ? (
-            <div className="bg-gray-900 rounded-xl p-4 flex-1 text-3xl grid place-items-center text-white/60 border border-gray-600 shadow-xl">
+            <div className="bg-gray-900 rounded-xl p-4 flex-1 text-3xl grid place-items-center text-white/60 border border-gray-600 shadow-2xl shadow-gray-950/50">
               <Spinner label="Loading..." color="primary" size="lg" />
             </div>
           ) : (
             <ResizablePanelGroup
               direction="horizontal"
-              className="bg-gray-900 rounded-xl p-4  border border-gray-600 shadow-xl"
+              className="bg-gray-900 rounded-xl p-4  border border-gray-600 shadow-2xl shadow-gray-950/50 "
             >
               <ResizablePanel>
                 <ResizablePanelGroup direction="vertical">

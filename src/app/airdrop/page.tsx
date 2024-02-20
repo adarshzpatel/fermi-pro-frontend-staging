@@ -1,9 +1,8 @@
 "use client";
-import CreateOpenOrdersAccountModal from "@/components/shared/CreateAccountModal";
 import { MARKETS } from "@/solana/constants";
 import { fetchTokenBalance } from "@/solana/utils/helpers";
 import { useFermiStore } from "@/stores/fermiStore";
-import { Button, Spinner, useDisclosure } from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -26,12 +25,6 @@ const Airdrop = () => {
   const client = useFermiStore((s) => s.client);
   const set = useFermiStore((s) => s.set);
   const [isMarketListOpen, setIsMarketListOpen] = useState(false);
-  const {
-    isOpen: isCreateOOModalOpen,
-    onOpen: openCreateOOModal,
-    onClose: closeCreateOOModal,
-    onOpenChange: onCreateOOModalOpenChange,
-  } = useDisclosure({ id: "create-oo-modal" });
 
   const [balances, setBalances] = useState<Balances>({
     quoteBalance: "0.00",
@@ -71,6 +64,8 @@ const Airdrop = () => {
     } catch (err: any) {
       console.log("[MARKET]", err);
       toast.error("Market Not Found");
+    } finally {
+      setIsMarketListOpen(false)
     }
   };
   useEffect(() => {
@@ -95,7 +90,7 @@ const Airdrop = () => {
 
       setBalances((prev) => ({
         ...prev,
-        quoteBalance: (Number(quoteBalance) / 1000000).toFixed(2),
+        quoteBalance: (Number(quoteBalance) / 100000).toFixed(2),
       }));
     } catch (err) {
       setBalances((prev) => ({
@@ -172,90 +167,93 @@ const Airdrop = () => {
   // }
 
   return (
-    <>
+    <main className="h-screen bg-gradient-to-t from-primary-700 to-primary-400 flex flex-col space-y-4  text-white p-4 bg-gradient">
       <Navigation />
-      <div className="screen-center">
-        <div className="border-default-200 from-default-100/75 to-default-100/75 relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-xl border bg-gradient-to-br via-black p-6">
-          {/* PAY SECTION */}
-          <div className="flex items-center justify-between gap-4 rounded-xl">
-            <p className="whitespace-nowrap  text-2xl font-medium">
-              Airdrop Tokens
-            </p>
-          </div>
-          <div className="bg-default-100/80 border-default-300 rounded-xl  border p-4">
-            <p className="font-medium">Market</p>
-            <p className="text-default-600 text-xs">
-              {selectedMarket !== undefined
-                ? selectedMarket?.publicKey?.toString()
-                : "Loading Market...."}
-            </p>
-          </div>
-          <div className="bg-default-100/80 border-default-300 rounded-xl border p-4">
-            <p className="font-medium">Quote token</p>
-            <p className="text-default-600 text-xs">
-              {selectedMarket !== undefined
-                ? selectedMarket.current?.quoteMint.toString()
-                : "Loading..."}
-            </p>
-            <Button
-              isDisabled={selectedMarket === undefined}
-              radius="none"
-              onClick={() => {
-                if (!selectedMarket?.current) return;
-                airdropToken(
-                  selectedMarket?.current?.quoteMint.toString(),
-                  1000 * 1000000
-                );
-              }}
-              size="sm"
-              className="my-2"
-              color="primary"
-            >
-              Airdrop 1000 quote tokens
-            </Button>
-            <p>Balance : {balances.quoteBalance}</p>
-          </div>
-          <div className="bg-default-100/80 border-default-300 rounded-xl  border p-4">
-            <p className="font-medium">Base Token</p>
-            <p className="text-default-600 text-xs">
-              {selectedMarket !== undefined
-                ? selectedMarket.current?.baseMint.toString()
-                : "Loading..."}
-            </p>
-            <Button
-              isDisabled={selectedMarket === undefined}
-              onClick={() => {
-                if (!selectedMarket?.current) return;
-                airdropToken(
-                  selectedMarket.current?.baseMint.toString(),
-                  1000 * 1000000000
-                );
-              }}
-              size="sm"
-              radius="none"
-              className="my-2"
-              color="primary"
-            >
-              Airdrop 1000 base tokens
-            </Button>
-            <p>Balance : {balances.baseBalance}</p>
-          </div>
-          <div className="bg-gray-900">
-            <MarketSelector
-              handleClick={() => setIsMarketListOpen((prev) => !prev)}
+      <div className="flex-1 grid place-items-center">
+
+      <div className="border-default-200  bg-gradient-to-br via-gray-950 from-gray-900/75 to-gray-900/75 relative flex w-full max-w-md flex-col gap-4 overflow-hidden rounded-xl border  p-6">
+        {/* PAY SECTION */}
+        <p className="whitespace-nowrap  text-2xl font-medium">
+          Airdrop Tokens
+        </p>
+        <div className="bg-gray-800/50 border rounded-xl overflow-hidden border-gray-600">
+          <MarketSelector
+            handleClick={() => setIsMarketListOpen((prev) => !prev)}
             />
-            {isMarketListOpen && (
-              <MarketList
-                markets={MARKETS.filter(
-                  (it) => it.marketPda !== selectedMarket?.publicKey.toString()
+        </div>
+        {isMarketListOpen ? (
+          <div className="bg-gray-800/50 border rounded-xl overflow-hidden border-gray-600">
+            <MarketList
+              markets={MARKETS.filter(
+                (it) => it.marketPda !== selectedMarket?.publicKey.toString()
                 )}
-                handleSelect={findAndSetMarket}
-              />
-            )}
+                />
           </div>
+        ) : (
+          <>
+            <div className="bg-gray-800/50 border-gray-600 rounded-xl  border p-4">
+              <p className="font-medium">Market</p>
+              <p className="text-default-600 text-xs">
+                {selectedMarket !== undefined
+                  ? selectedMarket?.publicKey?.toString()
+                  : "Loading Market...."}
+              </p>
+            </div>
+            <div className="bg-gray-800/50 border-gray-600 rounded-xl border p-4">
+              <p className="font-medium">Quote token</p>
+              <p className="border-gray-600 text-xs">
+                {selectedMarket !== undefined
+                  ? selectedMarket.current?.quoteMint.toString()
+                  : "Loading..."}
+              </p>
+              <Button
+                isDisabled={selectedMarket === undefined}
+                radius="sm"
+                onClick={() => {
+                  if (!selectedMarket?.current) return;
+                  airdropToken(
+                    selectedMarket?.current?.quoteMint.toString(),
+                    1000 * 1000000
+                    );
+                  }}
+                  size="sm"
+                  className="my-2"
+                  color="primary"
+                  >
+                Airdrop 1000 quote tokens
+              </Button>
+              <p>Balance : {balances.quoteBalance}</p>
+            </div>
+            <div className="bg-gray-800/50 border-gray-600 rounded-xl  border p-4">
+              <p className="font-medium">Base Token</p>
+              <p className="text-default-600 text-xs">
+                {selectedMarket !== undefined
+                  ? selectedMarket.current?.baseMint.toString()
+                  : "Loading..."}
+              </p>
+              <Button
+                isDisabled={selectedMarket === undefined}
+                onClick={() => {
+                  if (!selectedMarket?.current) return;
+                  airdropToken(
+                    selectedMarket.current?.baseMint.toString(),
+                    1000 * 1000000000
+                    );
+                  }}
+                  size="sm"
+                  radius="sm"
+                  className="my-2"
+                  color="primary"
+                  >
+                Airdrop 1000 base tokens
+              </Button>
+              <p>Balance : {balances.baseBalance}</p>
+            </div>
+          </>
+        )}
         </div>
       </div>
-    </>
+    </main>
   );
 };
 

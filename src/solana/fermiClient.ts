@@ -33,6 +33,7 @@ import {
   Side,
   checkMintOfATA,
   checkOrCreateAssociatedTokenAccount,
+  fetchTokenBalance,
 } from "./utils/helpers";
 
 export type IdsSource = "api" | "static" | "get-program-accounts";
@@ -289,8 +290,6 @@ export class OpenBookV2Client {
       [Buffer.from("Market"), market.publicKey.toBuffer()],
       this.program.programId
     );
-
-
 
     const baseVault = getAssociatedTokenAddressSync(
       baseMint,
@@ -900,7 +899,6 @@ export class OpenBookV2Client {
         userPk
       )
     );
-    const zeroAddress = new PublicKey("1".repeat(32));
 
     const ix = await this.program.methods
       .settleFunds()
@@ -914,7 +912,7 @@ export class OpenBookV2Client {
         marketQuoteVault: market.marketQuoteVault,
         userBaseAccount,
         userQuoteAccount,
-        referrerAccount: new PublicKey("None"),
+        referrerAccount: market.marketQuoteVault,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .instruction();

@@ -152,7 +152,7 @@ export const checkOrCreateAssociatedTokenAccount = async (
   // Find the ATA for the given mint and owner
   
   try{
-    const ata = await spl.getAssociatedTokenAddress(mint, owner, false);
+    const ata = await spl.getAssociatedTokenAddress(mint, owner, true);
     // Check if the ATA already exists
     const accountInfo = await provider.connection.getAccountInfo(ata);
     

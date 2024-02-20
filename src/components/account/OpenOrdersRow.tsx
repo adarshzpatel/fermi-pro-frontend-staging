@@ -30,9 +30,9 @@ const OpenOrdersRow = ({
       if (!finaliseEvent) return;
       setIsFinalising(true);
       await finalise(
-        finaliseEvent.taker,
         finaliseEvent.maker,
-        new BN(finaliseEvent.index)
+        finaliseEvent.taker,
+        new BN(Number(finaliseEvent.index))
       );
     } catch (err) {
       console.error("[FINALISE] :", err);

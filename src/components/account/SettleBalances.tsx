@@ -1,14 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import Copyable from "../shared/Copyable";
 import { MARKETS } from "@/solana/constants";
 import { Button } from "@nextui-org/react";
 import { useFermiStore } from "@/stores/fermiStore";
 import AccountNotFound from "./AccountNotFound";
-import { shortenAddress } from "@/solana/utils/helpers";
+import {
+  shortenAddress,
+  toUiDecimals,
+  toUiDecimalsForQuote,
+} from "@/solana/utils/helpers";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "sonner";
+import { airdropToken } from "@/solana/utils/airdropToken";
+import axios from "axios";
 
 const SettleBalances = () => {
+  const [processing, setProcessing] = useState(false);
   const selectedMarket = useFermiStore((s) => s.selectedMarket);
   const openOrders = useFermiStore((s) => s.openOrders);
+  const client = useFermiStore((s) => s.client);
+
+  const handleSettleFunds = async () => {
+    try {
+      if (!openOrders || !openOrders.account)
+        throw new Error("Open orders account not found.");
+      if (!selectedMarket || !selectedMarket.current)
+        throw new Error("No market found.");
+
+      const [ix, signers] = await client.settleFundsIx(
+        openOrders?.publicKey,
+        openOrders?.account,
+        selectedMarket?.publicKey,
+        selectedMarket?.current
+        );
+        await client
+        .sendAndConfirmTransaction([ix], {
+          additionalSigners: signers,
+        })
+    } catch (err) {
+      console.log("Error settling funds : ", err);
+      toast.error("Failed to settle funds.");
+    }
+  };
 
   return (
     <>
@@ -45,7 +78,10 @@ const SettleBalances = () => {
                   </Copyable>
                 </td>
                 <td className="text-right py-3 pr-4 text-lg font-medium text-white ">
-                {openOrders.account?.position.baseFreeNative.toString()}
+                  {toUiDecimals(
+                    openOrders.account?.position.baseFreeNative.toString(),
+                    9
+                  )}
                 </td>
               </tr>
               <tr className="text-center border-y border-gray-700  hover:bg-gray-700/25 duration-200 ease-out">
@@ -64,7 +100,9 @@ const SettleBalances = () => {
                   </Copyable>
                 </td>
                 <td className="text-right py-3 pr-4 text-lg font-medium text-white ">
-                  {openOrders.account?.position.quoteFreeNative.toString()}
+                  {toUiDecimalsForQuote(
+                    openOrders.account?.position.quoteFreeNative.toString()
+                  )}
                 </td>
               </tr>
             </>
@@ -72,7 +110,13 @@ const SettleBalances = () => {
         </tbody>
       </table>
       {openOrders?.publicKey && (
-        <Button radius="sm" color="primary" className="m-4">
+        <Button
+          onClick={handleSettleFunds}
+          isLoading={processing}
+          radius="sm"
+          color="primary"
+          className="m-4"
+        >
           Settle Funds
         </Button>
       )}

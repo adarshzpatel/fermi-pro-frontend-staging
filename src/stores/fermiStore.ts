@@ -22,8 +22,6 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import {
   Side,
   checkOrCreateAssociatedTokenAccount,
-  toNative,
-  toUiDecimalsForQuote,
 } from "@/solana/utils/helpers";
 
 type FermiStore = {
@@ -126,7 +124,7 @@ export const useFermiStore = create<FermiStore>()(
           set((s) => {
             s.client = client;
           });
-          toast.success("Connected to wallet");
+          toast("Connected to wallet");
         },
         fetchEventHeap: async () => {
           const client = get().client;
@@ -310,6 +308,9 @@ export const useFermiStore = create<FermiStore>()(
           // console.log(ooTaker?.owner.toString());
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
 
+          console.log({
+            slotsToConsume
+          })
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
