@@ -131,7 +131,7 @@ class OpenBookError extends Error {
   message: string;
   txid: string;
 
-  constructor({ txid, message }) {
+  constructor({ txid, message }:any) {
     super();
     this.message = message;
     this.txid = txid;

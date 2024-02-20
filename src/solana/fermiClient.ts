@@ -79,7 +79,7 @@ export class OpenBookV2Client {
   public program: Program<OpenbookV2>;
 
   private readonly idsSource: IdsSource;
-  private readonly postSendTxCallback?: ({ txid }) => void;
+  private readonly postSendTxCallback?: ({ txid }:any) => void;
   private readonly prioritizationFee: number;
   private readonly txConfirmationCommitment: Commitment;
 
@@ -1266,7 +1266,7 @@ export async function getFilteredProgramAccounts(
     throw new Error(resp.error.message);
   }
   return resp.result.map(
-    ({ pubkey, account: { data, executable, owner, lamports } }) => ({
+    ({ pubkey, account: { data, executable, owner, lamports } }:any) => ({
       publicKey: new PublicKey(pubkey),
       accountInfo: {
         data: Buffer.from(data[0], "base64"),
