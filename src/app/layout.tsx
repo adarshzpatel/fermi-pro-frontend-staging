@@ -18,9 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning={true} lang="en">
-      <body  className={"bg-gray-950 " + jetbrain.className}>
+      <body  className={"bg-gray-900 " + jetbrain.className}>
         <Providers>
-          <AppLayout>{children}</AppLayout>
+          {children}
         </Providers>
       </body>
     </html>

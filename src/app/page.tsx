@@ -1,69 +1,178 @@
 "use client";
-
-import CustomWalletConnectButton from "@/components/layout/CustomConnectWalletButton";
-import TradePageLayout from "@/components/layout/TradePageLayout";
-import StyledCard from "@/components/shared/StyledCard";
-import AccountData from "@/components/trade/AccountData";
-import MarketDetails from "@/components/trade/MarketDetails";
-import Orderbook from "@/components/trade/Orderbook";
-import TradeForm from "@/components/trade/TradeForm";
-import { MARKETS } from "@/solana/constants";
-import { useFermiStore } from "@/stores/fermiStore";
 import {
-  AnchorWallet,
-  useAnchorWallet,
-  useConnection,
-} from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
-import { useSearchParams, useRouter } from "next/navigation";
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/shared/ResizablePanels";
+
+import TradeForm from "@/components/trade-form/TradeForm";
+import Orderbook from "@/components/orderbook/Orderbook";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useFermiStore } from "@/stores/fermiStore";
+import AccountData from "@/components/account/AccountData";
+import Navigation from "@/components/layout/Navigation";
+import MarketSelector from "@/components/trade-form/MarketSelector";
+import MarketList from "@/components/trade-form/MarketList";
+import { MARKETS } from "@/solana/constants";
+import { PublicKey } from "@solana/web3.js";
+import { toast } from "sonner";
+import { Spinner } from "@nextui-org/react";
 
 export default function Home() {
   const searchParams = useSearchParams();
   const marketParam = searchParams?.get("market");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isMarketListOpen, setIsMarketListOpen] = useState(false);
   const connectedWallet = useAnchorWallet();
   const { connection } = useConnection();
   const selectedMarket = useFermiStore((s) => s.selectedMarket);
-  const { fetchMarket, fetchOpenOrders, connectClientToWallet } = useFermiStore(
-    (s) => s.actions,
-  );
-  // if no market param, redirect to first market
+  const client = useFermiStore((s) => s.client);
+  const set = useFermiStore((s) => s.set);
+  const {
+    fetchEventHeap,
+    fetchOpenOrders,
+    fetchOrderbook,
+    connectClientToWallet,
+  } = useFermiStore((s) => s.actions);
+
   useLayoutEffect(() => {
     if (!marketParam) {
       router.replace(`/?market=${MARKETS[0].marketPda}`);
     }
   }, [marketParam, router]);
 
+  const findAndSetMarket = async (marketPk: string) => {
+    setIsMarketListOpen(false);
+    try {
+      const { marketPda, baseTokenName, quoteTokenName } =
+        MARKETS.find((it) => it.marketPda === marketPk) ?? MARKETS[0];
+      const marketAccount = await client.deserializeMarketAccount(
+        new PublicKey(marketPda)
+      );
+
+      if (marketAccount === null) throw new Error("Market is Null");
+      set((s) => {
+        s.selectedMarket = {
+          publicKey: new PublicKey(marketPda),
+          current: marketAccount,
+          baseTokenName,
+          quoteTokenName,
+        };
+        s.orderbook = undefined;
+        s.openOrders = undefined;
+      });
+
+      // toast.success(
+      //   "Market Changed to " + `${baseTokenName}-${quoteTokenName}`
+      // );
+    } catch (err: any) {
+      console.log("[MARKET]", err);
+      toast.error("Market Not Found");
+    }
+  };
+
   useEffect(() => {
-    if (connectedWallet && marketParam) {
+    if (connection && connectedWallet?.publicKey && marketParam) {
       const init = async () => {
+        setLoading(true);
         await connectClientToWallet(connectedWallet, connection);
-        await fetchMarket(new PublicKey(marketParam));
+        await findAndSetMarket(marketParam);
         await fetchOpenOrders();
+        await fetchOrderbook();
+        await fetchEventHeap();
+        setLoading(false);
       };
       init();
     }
-  }, [connectedWallet, connection, marketParam]);
+  }, [connection, connectedWallet, marketParam]);
 
   return (
     <>
-      {!connectedWallet && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-gray-900/50 backdrop-blur-xl">
-          Please Connect Wallet to continue
-          <CustomWalletConnectButton />
-        </div>
-      )}
-      <div className="min-h-screen">
-        <TradePageLayout
-          tradeForm={<TradeForm />}
-          chart={<StyledCard>Chart</StyledCard>}
-          orderbook={<Orderbook />}
-          accountData={<AccountData />}
-          marketDetails={<MarketDetails />}
-        />
-      </div>
+      <main className="h-screen bg-indigo-500 flex flex-col space-y-4  text-white p-4 bg-gradient">
+        <Navigation />
+        {connectedWallet?.publicKey ? (
+          loading ? (
+            <div className="bg-gray-900 rounded-xl p-4 flex-1 text-3xl grid place-items-center text-white/60 border border-gray-600 shadow-xl">
+              <Spinner label="Loading..." color="primary" size="lg" />
+            </div>
+          ) : (
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="bg-gray-900 rounded-xl p-4  border border-gray-600 shadow-xl"
+            >
+              <ResizablePanel>
+                <ResizablePanelGroup direction="vertical">
+                  <ResizablePanel
+                    defaultSize={20}
+                    className="bg-gray-800 rounded-xl flex flex-col border border-gray-600"
+                  >
+                    <MarketSelector
+                      handleClick={() => setIsMarketListOpen((prev) => !prev)}
+                    />
+                    {isMarketListOpen ? (
+                      <MarketList
+                        markets={MARKETS.filter(
+                          (it) =>
+                            it.marketPda !==
+                            selectedMarket?.publicKey.toString()
+                        )}
+                        // handleSelect={findAndSetMarket}
+                      />
+                    ) : (
+                      <TradeForm />
+                    )}
+                  </ResizablePanel>
+                  {/* <ResizableHandle/>
+              <ResizablePanel
+                defaultSize={20}
+                className="bg-gray-800 rounded-xl flex flex-col border border-gray-600"
+              ></ResizablePanel> */}
+                </ResizablePanelGroup>
+              </ResizablePanel>
+
+              <ResizableHandle />
+              <ResizablePanel
+                defaultSize={50}
+                className="bg-gray-800 rounded-xl"
+              >
+                <ResizablePanelGroup
+                  direction="vertical"
+                  className="bg-gray-900"
+                >
+                  <ResizablePanel
+                    defaultSize={50}
+                    className="bg-gray-800 rounded-xl border border-gray-500 text-white/50 grid place-items-center text-xl "
+                  >
+                    🚧 Work in Progress 🚧
+                  </ResizablePanel>
+                  <ResizableHandle />
+                  <ResizablePanel
+                    defaultSize={50}
+                    className="bg-gray-800 rounded-xl flex flex-col border border-gray-600"
+                  >
+                    <AccountData />
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </ResizablePanel>
+              <ResizableHandle />
+              <ResizablePanel
+                defaultSize={25}
+                className="bg-gray-800 flex flex-col rounded-xl border shadow-xl border-gray-600"
+              >
+                <Orderbook />
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          )
+        ) : (
+          <div className="bg-gray-900 rounded-xl p-4 flex-1 text-3xl grid place-items-center text-white/60 border border-gray-600 shadow-xl">
+            Please connect wallet to continue !!
+          </div>
+        )}
+      </main>
     </>
   );
 }

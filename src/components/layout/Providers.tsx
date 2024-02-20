@@ -16,6 +16,7 @@ import { useMemo, useState, useEffect } from "react";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 import FullScreenLoading from "../shared/FullScreenLoading";
+import CustomToaster from "../shared/CustomToaster";
 
 type ProviderProps = {
   children: React.ReactNode;
@@ -39,12 +40,13 @@ const SolanaWalletProviders = ({ children }: ProviderProps) => {
     <>
       <ConnectionProvider
         endpoint={endpoint}
-        config={{ commitment: "finalized" }}
+        config={{ commitment: "confirmed" }}
       >
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>{children}</WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
+      <CustomToaster />
     </>
   );
 };
@@ -55,9 +57,7 @@ const Providers = ({ children }: ProviderProps) => {
     setIsMounted(true);
   }, []);
   if (!isMounted) {
-    return (
-      <FullScreenLoading/>
-    );
+    return <FullScreenLoading />;
   }
   return (
     <SolanaWalletProviders>

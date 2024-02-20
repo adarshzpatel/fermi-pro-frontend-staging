@@ -1,41 +1,31 @@
 "use client";
 import Link from "next/link";
 import CustomWalletConnectButton from "./CustomConnectWalletButton";
+import { MARKETS } from "@/solana/constants";
 
 export default function Navigation() {
   return (
-    <header className=" border-gray-600 w-screen pt-4 px-4 ">
-      <nav className="flex items-center justify-between ">
+    <nav className="bg-gray-900 rounded-xl   flex items-center  border border-gray-600 shadow-xl h-16">
+      <div className=" h-full grid place-items-center px-4 rounded-l-xl  bg-gray-800/50 border-r  border-gray-700 ">
+        <h1 className="text-xl">FERMI</h1>
+      </div>
+      <div className="text-white/60 flex items-center text-sm   gap-3 px-3">
         <Link
           href={"/"}
-          className="font-semibold  flex-1 text-2xl  font-heading"
+          className="hover:text-white h-full  px-4 py-2 hover:bg-gray-700/50 duration-300 ease-out rounded-md"
         >
-           FERMI.
+          Trade
         </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            color="foreground"
-            href="/airdrop"
-            className={
-              "rounded-full px-4 py-2  focus-within:outline-none  border-gray-600 bg-gray-800/75 hover:ring ring-gray-800/75  border shadow-lg hover:bg-gray-700/80 focus:bg-gray-700/80 hover:border-gray-400 text-gray-400 hover:text-gray-200 focus:text-gray-200 focus:border-gray-400  focus:ring-2  flex items-center justify-between cursor-pointer"
-            }
-          >
-            Airdrop
-          </Link>
-          <Link
-            color="foreground"
-            href="/"
-            className={
-              " rounded-full px-4 py-2  focus-within:outline-none  border-gray-600 bg-gray-800/75 hover:ring ring-gray-800/75 hover:bg-gray-700/80 focus:bg-gray-700/80  border shadow-lg hover:border-gray-400 text-gray-400 hover:text-gray-200 focus:text-gray-200 focus:border-gray-400  focus:ring-2  flex items-center justify-between cursor-pointer"
-            }
-          >
-            Trade
-          </Link>
-          <div>
-            <CustomWalletConnectButton />
-          </div>
-        </div>
-      </nav>
-    </header>
+        <Link
+          href={`/airdrop?market=${MARKETS[0].marketPda}`}
+          className="hover:text-white h-full px-4 py-2 hover:bg-gray-700/50 duration-300 ease-out rounded-md"
+        >
+          Airdrop
+        </Link>
+      </div>
+      <div className="ml-auto h-full grid place-items-center   ">
+        <CustomWalletConnectButton />
+      </div>
+    </nav>
   );
 }

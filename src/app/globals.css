@@ -2,13 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  box-sizing: border-box;
+}
 
+.mesh-gradient-bg{
+  background: url("https://uploads-ssl.webflow.com/5b61d6a92898676332523d67/5b632ec4b42fa3b124ac07a9_39.%20Prelude.jpg");
+  
+}
 
-@layer utilities {
-  .screen-center {
-    @apply flex items-center justify-center min-h-[calc(100vh-64px)];
-  }
-  .text-balance {
-    text-wrap: balance;
-  }
+.screen-center {
+  @apply flex items-center justify-center min-h-[calc(100vh-64px)];
+}
+.text-balance {
+  text-wrap: balance;
 }

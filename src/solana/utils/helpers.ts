@@ -9,9 +9,9 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import * as anchor from '@coral-xyz/anchor';
-import * as spl from '@solana/spl-token';
-
+import * as anchor from "@coral-xyz/anchor";
+import * as spl from "@solana/spl-token";
+import { TbWashDryP } from "react-icons/tb";
 
 export const Side = {
   Bid: { bid: {} },
@@ -41,6 +41,10 @@ export function bpsToDecimal(bps: number): number {
 
 export function percentageToDecimal(percentage: number): number {
   return percentage / 100;
+}
+
+export function shortenAddress(s: string) {
+  return s.slice(0, 6) + "..." + s.slice(-6);
 }
 
 export function toNative(uiAmount: number, decimals: number): BN {
@@ -113,7 +117,7 @@ export async function createAssociatedTokenAccountIdempotentInstruction(
 export const createMint = async (
   provider: anchor.AnchorProvider,
   mint: anchor.web3.Keypair,
-  decimal: number,
+  decimal: number
 ): Promise<void> => {
   // const programId = getDevPgmId();
   const tx = new anchor.web3.Transaction();
@@ -125,17 +129,17 @@ export const createMint = async (
       newAccountPubkey: mint.publicKey,
       space: spl.MintLayout.span,
       lamports: await provider.connection.getMinimumBalanceForRentExemption(
-        spl.MintLayout.span,
+        spl.MintLayout.span
       ),
-    }),
+    })
   );
   tx.add(
     spl.createInitializeMintInstruction(
       mint.publicKey,
       decimal,
       provider.wallet.publicKey,
-      provider.wallet.publicKey,
-    ),
+      provider.wallet.publicKey
+    )
   );
   await provider.sendAndConfirm(tx, [mint]);
 };
@@ -146,41 +150,45 @@ export const checkOrCreateAssociatedTokenAccount = async (
   owner: anchor.web3.PublicKey
 ): Promise<string> => {
   // Find the ATA for the given mint and owner
-  const ata = await spl.getAssociatedTokenAddress(
-    mint,
-    owner,
-    false
-  );
-
-  // Check if the ATA already exists
-  const accountInfo = await provider.connection.getAccountInfo(ata);
-
-  if (accountInfo == null) {
-    // ATA does not exist, create it
-    console.log("Creating Associated Token Account for user...");
-    await createAssociatedTokenAccount(provider, mint, ata, owner);
-    console.log("Associated Token Account created successfully.");
-  } else {
-    // ATA already exists
-    console.log("Associated Token Account already exists.");
+  
+  try{
+    const ata = await spl.getAssociatedTokenAddress(mint, owner, false);
+    // Check if the ATA already exists
+    const accountInfo = await provider.connection.getAccountInfo(ata);
+    
+    if (accountInfo == null) {
+      // ATA does not exist, create it
+      console.log("Creating Associated Token Account for user...");
+      await createAssociatedTokenAccount(provider, mint, ata, owner);
+      console.log("Associated Token Account created successfully.");
+    } else {
+      // ATA already exists
+      console.log("Associated Token Account already exists.");
+    }
+    
+    return ata.toBase58();
+  } catch(err){
+    console.error('Error in checkOrCreateAta',err)
+    throw err
   }
-
-  return ata.toBase58();
 };
 
-export async function checkMintOfATA(connection:Connection, ataAddress:anchor.Address): Promise<string> {
+export async function checkMintOfATA(
+  connection: Connection,
+  ataAddress: anchor.Address
+): Promise<string> {
   try {
-      const ataInfo = await connection.getAccountInfo(new PublicKey(ataAddress));
-      if (ataInfo === null) {
-          throw new Error("Account not found");
-      }
+    const ataInfo = await connection.getAccountInfo(new PublicKey(ataAddress));
+    if (ataInfo === null) {
+      throw new Error("Account not found");
+    }
 
-      // The mint address is the first 32 bytes of the account data
-      const mintAddress = new PublicKey(ataInfo.data.slice(0, 32));
-      return mintAddress.toBase58();
+    // The mint address is the first 32 bytes of the account data
+    const mintAddress = new PublicKey(ataInfo.data.slice(0, 32));
+    return mintAddress.toBase58();
   } catch (error) {
-      console.error("Error in checkMintOfATA:", error);
-      throw error;
+    console.error("Error in checkMintOfATA:", error);
+    throw error;
   }
 }
 
@@ -188,56 +196,51 @@ export const createAssociatedTokenAccount = async (
   provider: anchor.AnchorProvider,
   mint: anchor.web3.PublicKey,
   ata: anchor.web3.PublicKey,
-  owner: anchor.web3.PublicKey,
+  owner: anchor.web3.PublicKey
 ): Promise<void> => {
+
     const tx = new anchor.web3.Transaction();
     tx.add(
       spl.createAssociatedTokenAccountInstruction(
         provider.wallet.publicKey,
         ata,
         owner,
-        mint,
-      ),
-    );
-    await provider.sendAndConfirm(tx, []);
-  };
-  
-  export const mintTo = async (
-    provider: anchor.AnchorProvider,
-    mint: anchor.web3.PublicKey,
-    ta: anchor.web3.PublicKey,
-    amount: bigint,
-  ): Promise<void> => {
-    const tx = new anchor.web3.Transaction();
-    tx.add(
-      spl.createMintToInstruction(
-        mint,
-        ta,
-        provider.wallet.publicKey,
-        amount,
-        [],
-      ),
-    );
-    await provider.sendAndConfirm(tx, []);
-  };
-  
+        mint
+        )
+        );
 
-  export const fetchTokenBalance = async (
-    userPubKey: PublicKey,
-    mintPubKey: PublicKey,
-    connection: Connection
-  ) => {
-    try {
-      const associatedTokenAddress = await spl.getAssociatedTokenAddress(
-        mintPubKey,
-        userPubKey,
-        false
-      );
-      const account = await spl.getAccount(connection, associatedTokenAddress);
-  
-      return account?.amount.toString();
-    } catch (error) {
-      console.error("Error in fetchTokenBalance:", error);
-      throw error;
-    }
-  };
+       await provider.sendAndConfirm(tx, []);
+};
+
+export const mintTo = async (
+  provider: anchor.AnchorProvider,
+  mint: anchor.web3.PublicKey,
+  ta: anchor.web3.PublicKey,
+  amount: bigint
+): Promise<void> => {
+  const tx = new anchor.web3.Transaction();
+  tx.add(
+    spl.createMintToInstruction(mint, ta, provider.wallet.publicKey, amount, [])
+  );
+  await provider.sendAndConfirm(tx, []);
+};
+
+export const fetchTokenBalance = async (
+  userPubKey: PublicKey,
+  mintPubKey: PublicKey,
+  connection: Connection
+) => {
+  try {
+    const associatedTokenAddress = await spl.getAssociatedTokenAddress(
+      mintPubKey,
+      userPubKey,
+      false
+    );
+    const account = await spl.getAccount(connection, associatedTokenAddress);
+
+    return account?.amount.toString();
+  } catch (error) {
+    console.error("Error in fetchTokenBalance:", error);
+    throw error;
+  }
+};

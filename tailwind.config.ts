@@ -1,6 +1,6 @@
 import { nextui } from '@nextui-org/react'
 import type { Config } from 'tailwindcss'
-import {neutral} from 'tailwindcss/colors'
+import {gray,indigo} from 'tailwindcss/colors'
 
 const config: Config = {
   content: [
@@ -13,7 +13,7 @@ const config: Config = {
   theme: {
     extend: {
       colors:{
-        gray:neutral
+        gray:gray
       }
       ,
       fontFamily:{
@@ -21,6 +21,16 @@ const config: Config = {
       }
     },
   },
-  plugins: [nextui({defaultTheme:'dark'})],
+  plugins: [nextui({defaultTheme:'dark',themes:{
+    dark:{
+      colors:{
+        primary:{
+          ...indigo,
+          DEFAULT:indigo["500"],
+
+        }
+      }
+    }
+  }},)],
 }
 export default config

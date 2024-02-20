@@ -1,3 +1,4 @@
+"use client";
 import useSolBalance from "@/hooks/useSolBalance";
 import {
   Dropdown,
@@ -11,6 +12,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbArrowsExchange2, TbCopy, TbLogout } from "react-icons/tb";
+import { toast } from "sonner";
 
 const CustomWalletConnectButton = () => {
   const { disconnect } = useWallet();
@@ -70,18 +72,21 @@ const CustomWalletConnectButton = () => {
         classNames={{
           base: "",
           content:
-            "bg-gray-900 ring ring-gray-700/25 border border-gray-700    border-gray-600",
+            "bg-gray-950 border  shadow-2xl shadow-gray-950  border-gray-600",
+
           arrow: "",
         }}
       >
         {buttonState === "connected" ? (
-          <DropdownTrigger className="flex cursor-pointer items-center  justify-between  rounded-full border border-gray-600 bg-gray-800/75  px-4 py-2 text-gray-400 shadow-lg ring-gray-800/75 focus-within:outline-none hover:border-gray-400 hover:bg-gray-700/80 hover:text-gray-200  hover:ring  focus:border-gray-400 focus:bg-gray-700/80 focus:text-gray-200 focus:ring-2">
-            <div className="flex items-center gap-2">
-              <p className="hidden font-medium sm:block">
-                {solBalance && (solBalance / 1000000000).toFixed(4) + " SOL "}
-              </p>
-              <div className="bg-default-400 h-4 w-[1px]"></div>
-              <p className="">{content}</p>
+          <DropdownTrigger className="px-4 bg-gray-800/50 border-gray-700 border-l h-full rounded-r-xl hover:bg-gray-800 text-white/60 hover:text-white ease-out duration-300">
+            <div className="flex items-center ">
+              {solBalance && (
+                <p className="hidden text-sm sm:block pr-4">
+                  {solBalance && (solBalance / 1000000000).toFixed(4) + " SOL "}
+                </p>
+              )}
+
+              <p className="border-l border-gray-600 pl-4">{content}</p>
             </div>
           </DropdownTrigger>
         ) : (
@@ -101,28 +106,29 @@ const CustomWalletConnectButton = () => {
               }
             }}
             aria-expanded={menuOpen}
-            className="flex cursor-pointer items-center  justify-between  rounded-full border border-gray-600 bg-gray-800/75  px-4 py-2 text-gray-400 shadow-lg ring-gray-800/75 focus-within:outline-none hover:border-gray-400 hover:bg-gray-700/80 hover:text-gray-200  hover:ring  focus:border-gray-400 focus:bg-gray-700/80 focus:text-gray-200 focus:ring-2"
+            className="px-4 bg-gray-800/50 border-gray-700 border-l h-full rounded-r-xl hover:bg-gray-800 text-white/60 hover:text-white ease-out duration-300"
           >
             {content}
           </button>
         )}
-        <DropdownMenu
-          variant="faded"
-          aria-label="Wallet dropdown with options to change wallet and disconnect"
-        >
+        <DropdownMenu  aria-label="Wallet dropdown with options to change wallet and disconnect">
           <DropdownItem
             closeOnSelect={false}
+            className="data-[hover=true]:bg-gray-800"
             startContent={<TbCopy className="h-5 w-5" />}
             onClick={async () => {
               await navigator.clipboard.writeText(publicKey?.toBase58() ?? "");
               setCopied(true);
+              toast.success("Copied to clipboard")
               setTimeout(() => setCopied(false), 400);
             }}
             key="copy_address"
+
           >
             {copied ? "Copied" : "Copy Address"}
           </DropdownItem>
           <DropdownItem
+          className="data-[hover=true]:bg-gray-800"
             startContent={<TbArrowsExchange2 className="h-5 w-5" />}
             onClick={() => setModalVisible(true)}
             key="change_wallet"
@@ -130,7 +136,7 @@ const CustomWalletConnectButton = () => {
             Change wallet
           </DropdownItem>
           <DropdownItem
-            className="text-red-500"
+            className="text-red-500 data-[hover=true]:bg-red-500 data-[hover=true]:text-white"
             startContent={<TbLogout className="h-5 w-5" />}
             onClick={() => handleDisconnect()}
             key="disconnect"

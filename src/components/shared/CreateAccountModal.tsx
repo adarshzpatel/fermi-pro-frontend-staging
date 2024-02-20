@@ -28,7 +28,9 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   const connectedWallet = useAnchorWallet();
   const { currentMarket } = useCurrentMarket();
   const client = useFermiStore((state) => state.client);
-  const fetchOpenOrders = useFermiStore((state) => state.fetchOpenOrders);
+  const fetchOpenOrders = useFermiStore(
+    (state) => state.actions.fetchOpenOrders
+  );
   const createOpenOrdersAccount = async () => {
     try {
       setProcessing(true);
@@ -47,34 +49,29 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
       // Check if openOrdersAccount exits
       const openOrdersAccounts = await client.findOpenOrdersForMarket(
         connectedWallet.publicKey,
-        marketPublicKey,
+        marketPublicKey
       );
-
       if (openOrdersAccounts.length > 0) {
         console.log(
           "OpenOrdersAccount already exists",
-          JSON.stringify(openOrdersAccounts),
+          JSON.stringify(openOrdersAccounts)
         );
         return;
       }
 
       // If user does not have an openOrdersAccount, create one
       const allOpenOrders = await client.findAllOpenOrders(client.walletPk);
-      const accountIndex = new BN(allOpenOrders.length + 1);
 
       console.group("Create Open Orders Account");
 
-      const [ixs, openOrderPubKey] = await client.createOpenOrdersIx(
+      const [ixs] = await client.createOpenOrdersIx(
         marketPublicKey,
-        accountIndex,
         accountName,
         connectedWallet.publicKey,
-        null,
-        null,
+        null
       );
       console.log(client.walletPk);
-      console.log({ ixs, openOrderPubKey });
-      const tx = await client.sendAndConfirmTransaction(ixs);
+      const tx = await client.sendAndConfirmTransaction(ixs, {});
       setTxHash(tx);
       // await fetchOpenOrders();
       console.log("Created open orders account ", { tx });
@@ -92,7 +89,7 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   return (
     <Modal
       isOpen={isOpen}
-      className="border-default-200 border"
+      className="border-gray-600 border"
       onClose={closeModal}
       backdrop="blur"
     >
@@ -117,7 +114,7 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
                 <span>{"( click to view in explorer )"}</span>
               </Link>
               <Button
-                color="default"
+                color="primary"
                 variant="ghost"
                 onClick={closeModal}
                 radius="sm"

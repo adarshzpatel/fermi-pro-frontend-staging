@@ -6,6 +6,7 @@ import { toast } from "sonner";
 type Props = {
   textToCopy?: string;
   children: React.ReactNode;
+  className?:string
 };
 
 type CopyIconProps = {
@@ -16,13 +17,13 @@ export const copyToClipboard = async (textToCopy: string = "") => {
   return await navigator.clipboard.writeText(textToCopy);
 };
 
-const Copyable = ({ textToCopy, children }: Props) => {
+const Copyable = ({ textToCopy, children,className }: Props) => {
   const handleCopy = async () => {
     await copyToClipboard(textToCopy).then(() =>
       toast.success("Copied to clipboard!")
     );
   };
-  return <span className="cursor-pointer" onClick={handleCopy}>{children}</span>;
+  return <div className={`cursor-pointer ${className}`} onClick={handleCopy}>{children}</div>;
 };
 
 export default Copyable;
@@ -40,7 +41,7 @@ const CopyableText = ({
 }) => {
   return (
     <Copyable textToCopy={textToCopy}>
-      <span className={`flex gap-1.5 ` + className}>
+      <span className={`flex gap-1.5  items-center` + className}>
         {textToCopy}
         <Copyable.Icon />
       </span>
