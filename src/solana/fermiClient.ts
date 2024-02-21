@@ -1090,7 +1090,15 @@ export class OpenBookV2Client {
 
     const ix = await this.program.methods
       .cancelWithPenalty(side, slotsToConsume)
-      .accounts(accounts)
+      .accounts({
+        maker:maker,
+        taker:taker,
+        eventHeap:eventHeapPublicKey,
+        makerAta:makerAtaPublicKey,
+        takerAta:takerAtaPublicKey,
+        market:marketPublicKey,
+        
+      })
       .instruction();
 
     const signers: Signer[] = [];

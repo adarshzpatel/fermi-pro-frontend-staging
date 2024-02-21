@@ -4,7 +4,6 @@ import SettleBalances from "./SettleBalances";
 import { Tab, Tabs } from "@nextui-org/react";
 
 const AccountData = () => {
-
   return (
     <Tabs
       fullWidth

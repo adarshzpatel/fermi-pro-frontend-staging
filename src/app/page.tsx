@@ -81,9 +81,9 @@ export default function Home() {
         setLoading(true);
         await connectClientToWallet(connectedWallet, connection);
         await findAndSetMarket(marketParam);
-        await fetchOpenOrders();
         await fetchOrderbook();
         await fetchEventHeap();
+        await fetchOpenOrders();
         setLoading(false);
       };
       init();

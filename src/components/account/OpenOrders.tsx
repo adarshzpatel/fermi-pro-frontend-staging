@@ -26,8 +26,8 @@ const OpenOrders = () => {
     <table className="w-full table-fixed text-white/70 ">
       <thead>
         <tr className="bg-gray-900 text-sm  text-white/60 ">
-          <th className="p-2 pl-4 text-left font-normal">Order Id</th>
-          <th className="font-normal">Client Order Id</th>
+          <th className="p-2 pl-4 text-left font-normal">Sl.no</th>
+          <th className="font-normal">Side</th>
           <th className="font-normal">Price</th>
           <th className="font-normal">Actions</th>
         </tr>
@@ -49,11 +49,11 @@ const OpenOrders = () => {
             </td>
           </tr>
         )}
-        {openOrders?.orders?.map((it) => (
+        {openOrders?.orders?.map((it:any) => (
           <OpenOrdersRow
             key={`order-${it.id}`}
-            id={it.id}
-            clientOrderId={it.clientOrderId}
+            id={it.clientOrderId}
+            side={it.side}
             finaliseEvent={canFinalise[it.id]}
             lockedPrice={it.lockedPrice}
           />

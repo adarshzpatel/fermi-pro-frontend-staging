@@ -72,6 +72,7 @@ type FermiStore = {
     cancelWithPenalty: (
       maker: PublicKey,
       taker: PublicKey,
+      side:string,
       slot: BN
     ) => Promise<void>;
   };
@@ -167,14 +168,21 @@ export const useFermiStore = create<FermiStore>()(
 
           let orders: any = openOrdersAcc?.openOrders;
           // parse orders
+          const orderbook = get().orderbook
 
           if (orders) {
             orders = orders.filter((i: any) => i.isFree === 0);
-            orders = orders.map((i: any) => ({
-              clientOrderId: i.clientId.toString(),
-              lockedPrice: i.lockedPrice.toString(),
-              id: i.id.toString(),
-            }));
+            orders = orders.map((i: any) => {
+              let side = 'none'
+              if(orderbook?.bids?.find((it)=>it.key === i.id.toString())) side = "bid";
+              if(orderbook?.asks?.find((it)=>it.key === i.id.toString())) side = "ask";
+              return ({
+                clientOrderId: i.clientId.toString(),
+                side,
+                lockedPrice: i.lockedPrice.toString(),
+                id: i.id.toString(),
+              })
+            })
           }
 
           set((s) => {
@@ -298,6 +306,7 @@ export const useFermiStore = create<FermiStore>()(
         cancelWithPenalty: async (
           maker: PublicKey,
           taker: PublicKey,
+          side:string,
           slot: BN
         ) => {
           const client = get().client;
@@ -328,10 +337,9 @@ export const useFermiStore = create<FermiStore>()(
               ooTaker?.owner
             )
           );
-          const side = Side.Bid;
 
           const ix = await client.program.methods
-            .cancelWithPenalty(side, slot)
+            .cancelWithPenalty(side === 'bid' ? Side.Bid : Side.Ask, slot)
             .accounts({
               market: selectedMarket.publicKey,
               eventHeap: market.eventHeap,
