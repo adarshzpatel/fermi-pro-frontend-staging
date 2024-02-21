@@ -67,6 +67,7 @@ type FermiStore = {
     finalise: (
       maker: PublicKey,
       taker: PublicKey,
+      side:string,
       slotsToConsume: BN
     ) => Promise<void>;
     cancelWithPenalty: (
@@ -355,10 +356,11 @@ export const useFermiStore = create<FermiStore>()(
 
           await client.sendAndConfirmTransaction([ix]);
           console.log("cancelled with penalty");
-          await get().actions.fetchOpenOrders()
+          await get().actions.fetchOrderbook();
+          await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
         },
-        finalise: async (maker, taker, slotsToConsume: BN) => {
+        finalise: async (maker, taker, side,slotsToConsume: BN) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
           const market = get().selectedMarket?.current;
@@ -375,17 +377,19 @@ export const useFermiStore = create<FermiStore>()(
           console.log({
             slotsToConsume,
           });
+
+
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              market.baseMint,
+              side === 'bid' ? market.baseMint : market.quoteMint,
               ooMaker?.owner
             )
           );
           const takerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              market.baseMint,
+              side === 'bid' ? market.quoteMint : market.baseMint,
               ooTaker?.owner
             )
           );
