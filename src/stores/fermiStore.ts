@@ -378,6 +378,7 @@ export const useFermiStore = create<FermiStore>()(
           // console.log(ooTaker?.owner.toString());
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
 
+
           console.log({
             slotsToConsume,
           });
@@ -397,6 +398,17 @@ export const useFermiStore = create<FermiStore>()(
               ooTaker?.owner
             )
           );
+
+          console.log("FINALISE ARGS : ",{
+            maker:maker.toString(),
+            taker:taker.toString(),
+            makerAtaPublicKey:makerAtaPublicKey.toString(),
+            takerAtaPublicKey:takerAtaPublicKey.toString(),
+            slot:slotsToConsume.toString(),
+            takerSide,
+            makerOwnerWallet:ooMaker.toString(),
+            takerOwnerWallet:ooTaker.toString()
+          })
 
           const [ix, signers] =
             await client.createFinalizeGivenEventsInstruction(
