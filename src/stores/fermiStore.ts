@@ -387,14 +387,14 @@ export const useFermiStore = create<FermiStore>()(
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              takerSide === 1 ? market.baseMint : market.quoteMint,
+              takerSide === 0 ? market.quoteMint : market.baseMint,
               ooMaker?.owner
             )
           );
           const takerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              takerSide === 1 ? market.quoteMint : market.baseMint,
+              takerSide === 0 ? market.baseMint : market.quoteMint,
               ooTaker?.owner
             )
           );
