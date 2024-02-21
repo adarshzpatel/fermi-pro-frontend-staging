@@ -67,13 +67,14 @@ type FermiStore = {
     finalise: (
       maker: PublicKey,
       taker: PublicKey,
-      side:string,
+      takerSide: number,
       slotsToConsume: BN
     ) => Promise<void>;
     cancelWithPenalty: (
       maker: PublicKey,
       taker: PublicKey,
-      side:string,
+      takerSide:number,
+      side: string,
       slot: BN
     ) => Promise<void>;
   };
@@ -169,21 +170,23 @@ export const useFermiStore = create<FermiStore>()(
 
           let orders: any = openOrdersAcc?.openOrders;
           // parse orders
-          const orderbook = get().orderbook
+          const orderbook = get().orderbook;
 
           if (orders) {
             orders = orders.filter((i: any) => i.isFree === 0);
             orders = orders.map((i: any) => {
-              let side = 'none'
-              if(orderbook?.bids?.find((it)=>it.key === i.id.toString())) side = "bid";
-              if(orderbook?.asks?.find((it)=>it.key === i.id.toString())) side = "ask";
-              return ({
+              let side = "none";
+              if (orderbook?.bids?.find((it) => it.key === i.id.toString()))
+                side = "bid";
+              if (orderbook?.asks?.find((it) => it.key === i.id.toString()))
+                side = "ask";
+              return {
                 clientOrderId: i.clientId.toString(),
                 side,
                 lockedPrice: i.lockedPrice.toString(),
                 id: i.id.toString(),
-              })
-            })
+              };
+            });
           }
 
           set((s) => {
@@ -307,7 +310,8 @@ export const useFermiStore = create<FermiStore>()(
         cancelWithPenalty: async (
           maker: PublicKey,
           taker: PublicKey,
-          side:string,
+          takerSide:number,
+          side: string,
           slot: BN
         ) => {
           const client = get().client;
@@ -323,24 +327,24 @@ export const useFermiStore = create<FermiStore>()(
           const ooTaker = await client.deserializeOpenOrderAccount(taker);
 
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
+          // taker Side = 0 ( bid ) , 1 = (ask)
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              market.baseMint,
+              takerSide === 0 ? market.quoteMint : market.baseMint,
               ooMaker?.owner
             )
           );
-
           const takerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              market.baseMint,
+              takerSide === 0 ? market.baseMint : market.quoteMint,
               ooTaker?.owner
             )
           );
 
           const ix = await client.program.methods
-            .cancelWithPenalty(side === 'bid' ? Side.Bid : Side.Ask, slot)
+            .cancelWithPenalty(side === "bid" ? Side.Bid : Side.Ask, slot)
             .accounts({
               market: selectedMarket.publicKey,
               eventHeap: market.eventHeap,
@@ -360,7 +364,7 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
         },
-        finalise: async (maker, taker, side,slotsToConsume: BN) => {
+        finalise: async (maker, taker, takerSide, slotsToConsume: BN) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
           const market = get().selectedMarket?.current;
@@ -378,18 +382,18 @@ export const useFermiStore = create<FermiStore>()(
             slotsToConsume,
           });
 
-
+          // taker Side = 0 ( bid ) , 1 = (ask)
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              side === 'bid' ? market.baseMint : market.quoteMint,
+              takerSide === 0 ? market.quoteMint : market.baseMint,
               ooMaker?.owner
             )
           );
           const takerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              side === 'bid' ? market.quoteMint : market.baseMint,
+              takerSide === 0 ? market.baseMint : market.quoteMint,
               ooTaker?.owner
             )
           );

@@ -39,11 +39,12 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
   const handleFinalise = async () => {
     try {
       if (!finaliseEvent) return;
+
       setIsFinalising(true);
       await finalise(
         finaliseEvent.maker,
         finaliseEvent.taker,
-
+        finaliseEvent.takerSide,
         new BN(Number(finaliseEvent.index))
       );
     } catch (err) {
@@ -72,6 +73,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
       await cancelWithPenalty(
         finaliseEvent.maker,
         finaliseEvent.taker,
+        finaliseEvent.takerSide,
         side,
         new BN(finaliseEvent.index)
       );
