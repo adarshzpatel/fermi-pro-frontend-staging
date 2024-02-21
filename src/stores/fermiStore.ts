@@ -331,14 +331,14 @@ export const useFermiStore = create<FermiStore>()(
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              takerSide === 0 ? market.quoteMint : market.baseMint,
+              takerSide === 0 ? market.baseMint : market.quoteMint,
               ooMaker?.owner
             )
           );
           const takerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              takerSide === 0 ? market.baseMint : market.quoteMint,
+              takerSide === 0 ? market.quoteMint : market.baseMint,
               ooTaker?.owner
             )
           );
@@ -387,14 +387,14 @@ export const useFermiStore = create<FermiStore>()(
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              takerSide === 0 ? market.quoteMint : market.baseMint,
+              takerSide === 0 ? market.baseMint : market.quoteMint,
               ooMaker?.owner
             )
           );
           const takerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
-              takerSide === 0 ? market.baseMint : market.quoteMint,
+              takerSide === 0 ? market.quoteMint : market.baseMint,
               ooTaker?.owner
             )
           );
@@ -407,7 +407,9 @@ export const useFermiStore = create<FermiStore>()(
             slot:slotsToConsume.toString(),
             takerSide,
             makerOwnerWallet:ooMaker.toString(),
-            takerOwnerWallet:ooTaker.toString()
+            takerOwnerWallet:ooTaker.toString(),
+            baseToken:market.baseMint.toString(),
+            quoteToken:market.quoteMint.toString(),
           })
 
           const [ix, signers] =
