@@ -302,7 +302,7 @@ export const useFermiStore = create<FermiStore>()(
           await client.sendAndConfirmTransaction([ix], {
             additionalSigners: signers,
           });
-          toast.success("Order Cancelled");
+
           await get().actions.fetchOrderbook();
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
