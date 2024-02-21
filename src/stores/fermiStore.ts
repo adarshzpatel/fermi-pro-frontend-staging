@@ -69,12 +69,16 @@ type FermiStore = {
       taker: PublicKey,
       slotsToConsume: BN
     ) => Promise<void>;
+    cancelWithPenalty: (
+      maker: PublicKey,
+      taker: PublicKey,
+      slot: BN
+    ) => Promise<void>;
   };
 };
 
 export const initFermiClient = (provider: AnchorProvider) => {
   const postSendTxCallback = ({ txid }: { txid: string }) => {
-
     console.log(`[Tx] ${txid} sent`);
     console.log(
       `[Tx] Explorer: https://explorer.solana.com/tx/${txid}?cluster=devnet`
@@ -135,12 +139,12 @@ export const useFermiStore = create<FermiStore>()(
             eventHeapPk
           );
           const parsedEventHeap = parseEventHeap(client, eventHeapAcc);
-          console.log({eventHeapAcc,parsedEventHeap})
+          console.log({ eventHeapAcc, parsedEventHeap });
           // console.log({ parsedEventHeap });
           get().set((s) => {
             s.eventHeap = parsedEventHeap;
           });
-          console.log("[ EVENT HEAP ]: ",get().eventHeap)
+          console.log("[ EVENT HEAP ]: ", get().eventHeap);
         },
         fetchOpenOrders: async () => {
           const client = get().client;
@@ -160,7 +164,7 @@ export const useFermiStore = create<FermiStore>()(
             openOrdersAccPk
           );
           // console.log(JSON.stringify(openOrdersAcc?.position, null));
- 
+
           let orders: any = openOrdersAcc?.openOrders;
           // parse orders
 
@@ -180,7 +184,7 @@ export const useFermiStore = create<FermiStore>()(
               orders: orders,
             };
           });
-          console.log("[ OPEN ORDERS ACCOUNT ]: ", get().openOrders)
+          console.log("[ OPEN ORDERS ACCOUNT ]: ", get().openOrders);
         },
         fetchOrderbook: async () => {
           const client = get().client;
@@ -197,7 +201,6 @@ export const useFermiStore = create<FermiStore>()(
           const bids = parseBookSideAccount(client, bidsAcc);
           const asks = parseBookSideAccount(client, asksAcc);
 
-
           // const stringifiedBids = bids?.map((bid) => ({})
 
           set((s) => {
@@ -206,7 +209,7 @@ export const useFermiStore = create<FermiStore>()(
               asks,
             };
           });
-          console.log("[ ORDERBOOK ] : ",get().orderbook );
+          console.log("[ ORDERBOOK ] : ", get().orderbook);
         },
         cancelOrderById: async (id: string) => {
           const client = get().client;
@@ -237,7 +240,6 @@ export const useFermiStore = create<FermiStore>()(
 
           if (!oo?.account) throw new Error("Open orders not found");
           if (!selectedMarket?.current) throw new Error("Market not found");
-          
 
           // generate client id  - number of open orders + 1
           const clientOrderId = new BN((oo?.orders?.length ?? 0) + 1);
@@ -253,7 +255,6 @@ export const useFermiStore = create<FermiStore>()(
             selfTradeBehavior: { decrementTake: {} }, // Options might include 'decrementTake', 'cancelProvide', 'abortTransaction', etc.
             limit: 5,
           };
-
 
           // get user token account according to the side
           // quote ata for bid, base ata for ask
@@ -289,9 +290,64 @@ export const useFermiStore = create<FermiStore>()(
           await client.sendAndConfirmTransaction([ix], {
             additionalSigners: signers,
           });
-          toast.success("Order Cancelled");          
+          toast.success("Order Cancelled");
           await get().actions.fetchOrderbook();
           await get().actions.fetchOpenOrders();
+          await get().actions.fetchEventHeap();
+        },
+        cancelWithPenalty: async (
+          maker: PublicKey,
+          taker: PublicKey,
+          slot: BN
+        ) => {
+          const client = get().client;
+          if (!client) throw new Error("Client not found");
+          const selectedMarket = get().selectedMarket;
+          if (!selectedMarket) throw new Error("Market Not Selected");
+          // accs -> market , marketAuth, eventHeap, makerAta,takerAta,marketVaultQuote,marketVaultBase,maker,taker,tokenProgram,systemprogram,
+          // args -> side, slot
+          const market = selectedMarket.current;
+          if (market === null)
+            throw new Error("error in cancel ith penalty : market is null");
+          const ooMaker = await client.deserializeOpenOrderAccount(maker);
+          const ooTaker = await client.deserializeOpenOrderAccount(taker);
+
+          if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
+          const makerAtaPublicKey = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              ooMaker?.owner
+            )
+          );
+
+          const takerAtaPublicKey = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              ooTaker?.owner
+            )
+          );
+          const side = Side.Bid;
+
+          const ix = await client.program.methods
+            .cancelWithPenalty(side, slot)
+            .accounts({
+              market: selectedMarket.publicKey,
+              eventHeap: market.eventHeap,
+              maker: maker,
+              taker: taker,
+              makerAta: makerAtaPublicKey,
+              takerAta: takerAtaPublicKey,
+              marketAuthority: market.marketAuthority,
+              marketVaultBase: market.marketBaseVault,
+              marketVaultQuote: market.marketQuoteVault,
+            })
+            .instruction();
+
+          await client.sendAndConfirmTransaction([ix]);
+          console.log("cancelled with penalty");
+          await get().actions.fetchOpenOrders()
           await get().actions.fetchEventHeap();
         },
         finalise: async (maker, taker, slotsToConsume: BN) => {
@@ -309,8 +365,8 @@ export const useFermiStore = create<FermiStore>()(
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
 
           console.log({
-            slotsToConsume
-          })
+            slotsToConsume,
+          });
           const makerAtaPublicKey = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -336,6 +392,7 @@ export const useFermiStore = create<FermiStore>()(
               market.marketBaseVault,
               market.marketQuoteVault,
               maker,
+              taker,
               slotsToConsume
             );
 
@@ -343,12 +400,10 @@ export const useFermiStore = create<FermiStore>()(
             additionalSigners: signers,
           });
 
-          toast.success("Order Finalised");  
+          toast.success("Order Finalised");
           await get().actions.fetchOrderbook();
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
-
-
         },
       },
     };
@@ -365,7 +420,7 @@ export const parseBookSideAccount = (
       ...node,
       key: node.key.toString(),
       price: new BN(node.key).shrn(64).toString(),
-      quantity: node.quantity.toString()
+      quantity: node.quantity.toString(),
     }));
 
   return nodes;

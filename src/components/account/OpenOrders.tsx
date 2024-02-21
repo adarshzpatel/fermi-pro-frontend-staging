@@ -13,7 +13,7 @@ const OpenOrders = () => {
       openOrders?.orders?.forEach((order) => {
         const match = eventHeap?.find(
           (event: any) =>
-            event.makerClientOrderId.toString() === order.clientOrderId
+            event.makerClientOrderId.toString() === order.clientOrderId || event.takerClientOrderId.toString() === order.clientOrderId
         );
         if (match) map[order.id] = match;
       });

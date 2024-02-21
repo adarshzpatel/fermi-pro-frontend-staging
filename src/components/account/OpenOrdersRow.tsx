@@ -18,12 +18,13 @@ const OpenOrdersRow = ({
   lockedPrice,
   finaliseEvent,
 }: Props) => {
-  const [cancel, finalise] = useFermiStore((s) => [
+  const [cancel, finalise, cancelWithPenalty] = useFermiStore((s) => [
     s.actions.cancelOrderById,
     s.actions.finalise,
+    s.actions.cancelWithPenalty,
   ]);
   const [isFinalising, setIsFinalising] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
+const [isCancelling, setIsCancelling] = useState(false);
 
   const handleFinalise = async () => {
     try {
@@ -52,11 +53,26 @@ const OpenOrdersRow = ({
       setIsCancelling(false);
     }
   };
+
+  const handleCancelWithPenalty = async () => {
+    try {
+      if (!finaliseEvent) return;
+      setIsCancelling(true);
+      await cancelWithPenalty(
+        finaliseEvent.maker,
+        finaliseEvent.taker,
+        new BN(finaliseEvent.index)
+      );
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to cancel");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   return (
-    <tr
-      
-      className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out"
-    >
+    <tr className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out">
       <td className="py-3 pl-4 text-left">{id}</td>
       <td>{clientOrderId}</td>
       <td>{lockedPrice}</td>
@@ -75,10 +91,10 @@ const OpenOrdersRow = ({
           <Button
             isLoading={isCancelling}
             isDisabled={isFinalising}
-            onClick={handleCancel}
+            onClick={finaliseEvent ? handleCancelWithPenalty : handleCancel}
             className="bg-gray-900/50 border-gray-500 border hover:brightness-125 text-white/60 "
           >
-            Cancel
+             Cancel
           </Button>
         </ButtonGroup>
       </td>
