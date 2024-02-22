@@ -14,7 +14,7 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: 'SOL',
     quoteTokenName: 'USDC',
-    marketPda: "JZdShu7egBj7sRuabpvsLE7V6UF3yzyyJXqbmai6Ctd",
+    marketPda: "E45ZiHS6B6suxTaAWih5tkwJ56Trqw16hZrUYCP8zmm8",
   },
 
   {
@@ -25,7 +25,7 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: 'DOGE',
     quoteTokenName: 'SOL',
-    marketPda: "78NPJ4JGUpG2mptsFvJfnacwEWC9X3WSEAadSoZx4qRn",
+    marketPda: "AZHkGWdchSNgPfeMoiD7SVGN6ZjQhuvAweBmSc5ZTLhg",
   },
 
 ];

@@ -26,6 +26,7 @@ import {
   type TransactionSignature,
   Transaction,
   type AccountMeta,
+  ComputeBudgetProgram,
 } from "@solana/web3.js";
 import { IDL, type OpenbookV2 } from "./idl";
 import { sendTransaction } from "./utils/rpc";
@@ -79,7 +80,7 @@ export class OpenBookV2Client {
   public program: Program<OpenbookV2>;
 
   private readonly idsSource: IdsSource;
-  private readonly postSendTxCallback?: ({ txid }:any) => void;
+  private readonly postSendTxCallback?: ({ txid }: any) => void;
   private readonly prioritizationFee: number;
   private readonly txConfirmationCommitment: Commitment;
 
@@ -1039,7 +1040,7 @@ export class OpenBookV2Client {
       marketVaultBase: marketVaultBasePublicKey,
       marketVaultQuote: marketVaultQuotePublicKey,
       maker: maker,
-      taker:taker
+      taker: taker,
       // marketAuthorityPDA: marketAuthorityPDA,
       // tokenProgram: tokenProgramPublicKey,
       // Add other accounts as required by the instruction
@@ -1049,9 +1050,13 @@ export class OpenBookV2Client {
       { name: "slots", type: { vec: slotsToConsume } },
       // Add other arguments as required by the method's signature
     ];
+    const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
+      units: 1000000 
+    });
+
     const ix = await this.program.methods
       .atomicFinalizeGivenEvents(slotsToConsume)
-      .accounts(accounts)
+      .accounts(accounts).preInstructions([modifyComputeUnits])
       .instruction();
 
     const signers: Signer[] = [];
@@ -1091,13 +1096,12 @@ export class OpenBookV2Client {
     const ix = await this.program.methods
       .cancelWithPenalty(side, slotsToConsume)
       .accounts({
-        maker:maker,
-        taker:taker,
-        eventHeap:eventHeapPublicKey,
-        makerAta:makerAtaPublicKey,
-        takerAta:takerAtaPublicKey,
-        market:marketPublicKey,
-        
+        maker: maker,
+        taker: taker,
+        eventHeap: eventHeapPublicKey,
+        makerAta: makerAtaPublicKey,
+        takerAta: takerAtaPublicKey,
+        market: marketPublicKey,
       })
       .instruction();
 
@@ -1131,15 +1135,19 @@ export class OpenBookV2Client {
       marketVaultBase: marketVaultBasePublicKey,
       marketVaultQuote: marketVaultQuotePublicKey,
       maker: maker,
-      taker:taker
+      taker: taker,
       //marketAuthorityPDA: marketAuthorityPDA,
       // tokenProgram: tokenProgramPublicKey,
       // Add other accounts as required by the instruction
     };
-
+    const additionalComputeBudgetInstruction =
+      ComputeBudgetProgram.setComputeUnitLimit({
+        units: 400000,
+      });
     const ix = await this.program.methods
       .atomicFinalizeEvents(slotsToConsume)
       .accounts(accounts)
+      .preInstructions([additionalComputeBudgetInstruction])
       .instruction();
 
     const signers: Signer[] = [];
@@ -1278,7 +1286,7 @@ export async function getFilteredProgramAccounts(
     throw new Error(resp.error.message);
   }
   return resp.result.map(
-    ({ pubkey, account: { data, executable, owner, lamports } }:any) => ({
+    ({ pubkey, account: { data, executable, owner, lamports } }: any) => ({
       publicKey: new PublicKey(pubkey),
       accountInfo: {
         data: Buffer.from(data[0], "base64"),

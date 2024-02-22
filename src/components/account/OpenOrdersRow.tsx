@@ -2,6 +2,12 @@ import { FillEvent } from "@/solana/fermiClient";
 import { useFermiStore } from "@/stores/fermiStore";
 import { BN } from "@coral-xyz/anchor";
 import { Button, ButtonGroup } from "@nextui-org/react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
+import { Transaction } from "@solana/web3.js";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,31 +28,61 @@ const SideCell = ({ side }: { side: string }) => {
   }
   if (side == "ask") {
     return (
-      <div className="px-2  w-fit mx-auto  py-0.5 rounded-full text-red-500 bg-red-10">ASK</div>
+      <div className="px-2  w-fit mx-auto  py-0.5 rounded-full text-red-500 bg-red-500/10">
+        ASK
+      </div>
     );
   }
-  return <div className="px-2  w-fit mx-auto  py-0.5 rounded-full  bg-gray-700">NONE</div>;
+  return (
+    <div className="px-2  w-fit mx-auto  py-0.5 rounded-full  bg-primary-700 text-primary-100">
+      FINALIZED
+    </div>
+  );
 };
 const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
-  const [cancel, finalise, cancelWithPenalty] = useFermiStore((s) => [
+  const [cancel, finalise, cancelWithPenalty,fetchEventHeap,fetchOpenOrders,fetchOrderbook] = useFermiStore((s) => [
     s.actions.cancelOrderById,
     s.actions.finalise,
     s.actions.cancelWithPenalty,
+    s.actions.fetchEventHeap,
+    s.actions.fetchOpenOrders,
+    s.actions.fetchOrderbook
   ]);
+  const oo = useFermiStore((s) => s.openOrders?.publicKey);
   const [isFinalising, setIsFinalising] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const isTaker = finaliseEvent?.taker.toString() === oo?.toString();
+  const { sendTransaction } = useWallet();
+  const { connection } = useConnection();
+
+  const _side = finaliseEvent
+    ? isTaker
+      ? finaliseEvent.takerSide === 0
+        ? "bid"
+        : "ask"
+      : finaliseEvent.takerSide === 0
+      ? "ask"
+      : "bid"
+    : side;
 
   const handleFinalise = async () => {
     try {
       if (!finaliseEvent) return;
 
       setIsFinalising(true);
-      await finalise(
+      const finaliseTx = await finalise(
         finaliseEvent.maker,
         finaliseEvent.taker,
         finaliseEvent.takerSide,
         new BN(Number(finaliseEvent.index))
       );
+      const res = await sendTransaction(finaliseTx as Transaction, connection);
+      console.log({res})
+
+      toast.success("Order Finalised");
+      await fetchOrderbook();
+      await fetchOpenOrders();
+      await fetchEventHeap();
     } catch (err) {
       console.error("[FINALISE] :", err);
       toast.error("Failed to finalise.");
@@ -74,7 +110,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
         finaliseEvent.maker,
         finaliseEvent.taker,
         finaliseEvent.takerSide,
-        side,
+        _side,
         new BN(finaliseEvent.index)
       );
     } catch (err) {
@@ -85,11 +121,15 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
     }
   };
 
+  if(!finaliseEvent && side==='none'){
+    return null
+  }
+
   return (
     <tr className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out">
-      <td className="py-3 pl-4 text-left">{id}</td>
+      <td className="py-3 pl-4 text-left w-4">{id}</td>
       <td>
-        <SideCell side={side} />
+        <SideCell side={_side} />
       </td>
       <td>{lockedPrice}</td>
       <td className="flex items-center justify-end pr-4 py-3">
@@ -110,7 +150,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
             onClick={finaliseEvent ? handleCancelWithPenalty : handleCancel}
             className="bg-gray-900/50 border-gray-500 border hover:brightness-125 text-white/60 "
           >
-            Cancel
+            {finaliseEvent ? "Cancel With Penalty " : "Cancel"}
           </Button>
         </ButtonGroup>
       </td>

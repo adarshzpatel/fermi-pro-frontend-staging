@@ -23,7 +23,7 @@ const OpenOrders = () => {
   }, [openOrders, eventHeap]);
 
   return (
-    <table className="w-full table-fixed text-white/70 ">
+    <table className="w-full table-auto text-white/70 ">
       <thead>
         <tr className="bg-gray-900 text-sm  text-white/60 ">
           <th className="p-2 pl-4 text-left font-normal">Sl.no</th>

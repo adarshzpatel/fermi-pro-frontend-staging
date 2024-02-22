@@ -10,7 +10,7 @@ const Bids = ({ data }: Props) => {
       {data?.map((it:any) => (
         <div key={it.key} className="flex items-center bg-green-700/20 px-3 py-1.5 justify-between ">
           <span>{it.price}</span>
-          <span className="m">{it.quantity}</span>
+          <span className="">{it.quantity}</span>
         </div>
       ))}
     </div>

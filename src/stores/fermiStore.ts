@@ -8,8 +8,8 @@ import {
   OpenOrdersAccount,
   OutEvent,
 } from "@/solana/fermiClient";
-import { AnchorProvider, BN } from "@coral-xyz/anchor";
-import { Commitment, Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
+import { Commitment, ComputeBudgetProgram, Connection, Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { create } from "zustand";
 import { produce } from "immer";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -69,7 +69,7 @@ type FermiStore = {
       taker: PublicKey,
       takerSide: number,
       slotsToConsume: BN
-    ) => Promise<void>;
+    ) => Promise<Transaction>;
     cancelWithPenalty: (
       maker: PublicKey,
       taker: PublicKey,
@@ -412,6 +412,10 @@ export const useFermiStore = create<FermiStore>()(
             quoteToken:market.quoteMint.toString(),
           })
 
+          const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
+            units: 300000 
+          });
+      
           const [ix, signers] =
             await client.createFinalizeGivenEventsInstruction(
               marketPublicKey,
@@ -426,14 +430,11 @@ export const useFermiStore = create<FermiStore>()(
               slotsToConsume
             );
 
-          await client.sendAndConfirmTransaction([ix], {
-            additionalSigners: signers,
-          });
+          const tx = new Transaction().add(modifyComputeUnits).add(ix);
+              
+          return tx
 
-          toast.success("Order Finalised");
-          await get().actions.fetchOrderbook();
-          await get().actions.fetchOpenOrders();
-          await get().actions.fetchEventHeap();
+
         },
       },
     };
