@@ -40,13 +40,20 @@ const SideCell = ({ side }: { side: string }) => {
   );
 };
 const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
-  const [cancel, finalise, cancelWithPenalty,fetchEventHeap,fetchOpenOrders,fetchOrderbook] = useFermiStore((s) => [
+  const [
+    cancel,
+    finalise,
+    cancelWithPenalty,
+    fetchEventHeap,
+    fetchOpenOrders,
+    fetchOrderbook,
+  ] = useFermiStore((s) => [
     s.actions.cancelOrderById,
     s.actions.finalise,
     s.actions.cancelWithPenalty,
     s.actions.fetchEventHeap,
     s.actions.fetchOpenOrders,
-    s.actions.fetchOrderbook
+    s.actions.fetchOrderbook,
   ]);
   const oo = useFermiStore((s) => s.openOrders?.publicKey);
   const [isFinalising, setIsFinalising] = useState(false);
@@ -77,7 +84,8 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
         new BN(Number(finaliseEvent.index))
       );
       const res = await sendTransaction(finaliseTx as Transaction, connection);
-      console.log({res})
+      console.log(finaliseTx.signatures.map((t) => console.log(toString())));
+      console.log({ res });
 
       toast.success("Order Finalised");
       await fetchOrderbook();
@@ -121,8 +129,8 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
     }
   };
 
-  if(!finaliseEvent && side==='none'){
-    return null
+  if (!finaliseEvent && side === "none") {
+    return null;
   }
 
   return (
