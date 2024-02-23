@@ -204,7 +204,7 @@ export const useFermiStore = create<FermiStore>()(
               orders: orders,
             };
           });
-          console.log("[ OPEN ORDERS ACCOUNT ]: ", JSON.stringify(get().openOrders?.publicKey))?.json();
+          console.log("[ OPEN ORDERS ACCOUNT ]: ", JSON.stringify(get().openOrders?.publicKey));
         },
         fetchOrderbook: async () => {
           const client = get().client;
