@@ -532,7 +532,6 @@ export class OpenBookV2Client {
 
     return openOrdersAccount;
   }
-
   public async depositIx(
     openOrdersPublicKey: PublicKey,
     openOrdersAccount: OpenOrdersAccount,
@@ -1030,7 +1029,7 @@ export class OpenBookV2Client {
     maker: PublicKey,
     taker: PublicKey,
     slotsToConsume: BN
-  ): Promise<[TransactionInstruction, Signer[]]> {
+  ): Promise<[TransactionInstruction[], Signer[]]> {
     const accounts = {
       market: marketPublicKey,
       marketAuthority: marketAuthority,
@@ -1051,7 +1050,7 @@ export class OpenBookV2Client {
       // Add other arguments as required by the method's signature
     ];
     const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
-      units: 1000000 
+      units: 300000
     });
 
     const ix = await this.program.methods
@@ -1062,7 +1061,7 @@ export class OpenBookV2Client {
     const signers: Signer[] = [];
     // Add any additional signers if necessary
 
-    return [ix, signers];
+    return [[modifyComputeUnits,ix], signers];
   }
 
   public async createCancelGivenEventIx(

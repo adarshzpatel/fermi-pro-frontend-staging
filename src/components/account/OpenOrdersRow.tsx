@@ -7,7 +7,7 @@ import {
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { Transaction } from "@solana/web3.js";
+import { Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -44,9 +44,6 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
     cancel,
     finalise,
     cancelWithPenalty,
-    fetchEventHeap,
-    fetchOpenOrders,
-    fetchOrderbook,
   ] = useFermiStore((s) => [
     s.actions.cancelOrderById,
     s.actions.finalise,
@@ -59,7 +56,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
   const [isFinalising, setIsFinalising] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const isTaker = finaliseEvent?.taker.toString() === oo?.toString();
-  const { sendTransaction } = useWallet();
+  const {signTransaction,publicKey} = useWallet();
   const { connection } = useConnection();
 
   const _side = finaliseEvent
@@ -77,20 +74,12 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
       if (!finaliseEvent) return;
 
       setIsFinalising(true);
-      const finaliseTx = await finalise(
+      await finalise(
         finaliseEvent.maker,
         finaliseEvent.taker,
         finaliseEvent.takerSide,
         new BN(Number(finaliseEvent.index))
       );
-      const res = await sendTransaction(finaliseTx as Transaction, connection);
-      console.log(finaliseTx.signatures.map((t) => console.log(toString())));
-      console.log({ res });
-
-      toast.success("Order Finalised");
-      await fetchOrderbook();
-      await fetchOpenOrders();
-      await fetchEventHeap();
     } catch (err) {
       console.error("[FINALISE] :", err);
       toast.error("Failed to finalise.");

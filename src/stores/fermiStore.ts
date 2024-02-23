@@ -9,7 +9,15 @@ import {
   OutEvent,
 } from "@/solana/fermiClient";
 import { AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
-import { Commitment, ComputeBudgetProgram, Connection, Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import {
+  Commitment,
+  ComputeBudgetProgram,
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import { create } from "zustand";
 import { produce } from "immer";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -69,11 +77,11 @@ type FermiStore = {
       taker: PublicKey,
       takerSide: number,
       slotsToConsume: BN
-    ) => Promise<Transaction>;
+    ) => Promise<void>;
     cancelWithPenalty: (
       maker: PublicKey,
       taker: PublicKey,
-      takerSide:number,
+      takerSide: number,
       side: string,
       slot: BN
     ) => Promise<void>;
@@ -196,7 +204,7 @@ export const useFermiStore = create<FermiStore>()(
               orders: orders,
             };
           });
-          console.log("[ OPEN ORDERS ACCOUNT ]: ", get().openOrders);
+          console.log("[ OPEN ORDERS ACCOUNT ]: ", JSON.stringify(get().openOrders?.publicKey))?.json();
         },
         fetchOrderbook: async () => {
           const client = get().client;
@@ -310,7 +318,7 @@ export const useFermiStore = create<FermiStore>()(
         cancelWithPenalty: async (
           maker: PublicKey,
           taker: PublicKey,
-          takerSide:number,
+          takerSide: number,
           side: string,
           slot: BN
         ) => {
@@ -378,7 +386,6 @@ export const useFermiStore = create<FermiStore>()(
           // console.log(ooTaker?.owner.toString());
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
 
-
           console.log({
             slotsToConsume,
           });
@@ -399,24 +406,20 @@ export const useFermiStore = create<FermiStore>()(
             )
           );
 
-          console.log("FINALISE ARGS : ",{
-            maker:maker.toString(),
-            taker:taker.toString(),
-            makerAtaPublicKey:makerAtaPublicKey.toString(),
-            takerAtaPublicKey:takerAtaPublicKey.toString(),
-            slot:slotsToConsume.toString(),
+          console.log("FINALISE ARGS : ", {
+            maker: maker.toString(),
+            taker: taker.toString(),
+            makerAtaPublicKey: makerAtaPublicKey.toString(),
+            takerAtaPublicKey: takerAtaPublicKey.toString(),
+            slot: slotsToConsume.toString(),
             takerSide,
-            makerOwnerWallet:ooMaker.toString(),
-            takerOwnerWallet:ooTaker.toString(),
-            baseToken:market.baseMint.toString(),
-            quoteToken:market.quoteMint.toString(),
-          })
-
-          const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
-            units: 300000 
+            makerOwnerWallet: ooMaker?.owner.toString(),
+            takerOwnerWallet: ooTaker?.owner?.toString(),
+            baseToken: market.baseMint.toString(),
+            quoteToken: market.quoteMint.toString(),
           });
-      
-          const [ix, signers] =
+
+          const [ixs, signers] =
             await client.createFinalizeGivenEventsInstruction(
               marketPublicKey,
               market.marketAuthority,
@@ -430,11 +433,11 @@ export const useFermiStore = create<FermiStore>()(
               slotsToConsume
             );
 
-          const tx = new Transaction().add(modifyComputeUnits).add(ix);
-              
-          return tx
-
-
+          await client.sendAndConfirmTransaction(ixs);
+          toast.success("Order Finalised");
+          await get().actions.fetchOrderbook();
+          await get().actions.fetchEventHeap();
+          await get().actions.fetchOpenOrders();
         },
       },
     };
