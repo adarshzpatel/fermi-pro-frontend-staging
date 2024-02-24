@@ -90,7 +90,7 @@ const Airdrop = () => {
 
       setBalances((prev) => ({
         ...prev,
-        quoteBalance: (Number(quoteBalance) / 100000).toFixed(2),
+        quoteBalance: (Number(quoteBalance) / 1000000).toFixed(2),
       }));
     } catch (err) {
       setBalances((prev) => ({
@@ -213,7 +213,7 @@ const Airdrop = () => {
                   if (!selectedMarket?.current) return;
                   airdropToken(
                     selectedMarket?.current?.quoteMint.toString(),
-                    1000 * 1000000
+                    10000 * 1000000
                     );
                   }}
                   size="sm"
@@ -237,7 +237,7 @@ const Airdrop = () => {
                   if (!selectedMarket?.current) return;
                   airdropToken(
                     selectedMarket.current?.baseMint.toString(),
-                    1000 * 1000000000
+                    10000 * 1000000000
                     );
                   }}
                   size="sm"
