@@ -87,7 +87,7 @@ const Airdrop = () => {
         selectedMarket.current?.quoteMint,
         connection
       );
-
+      console.log("Quote balance",quoteBalance.toString())
       setBalances((prev) => ({
         ...prev,
         quoteBalance: (Number(quoteBalance) / 1000000).toFixed(2),
@@ -114,6 +114,7 @@ const Airdrop = () => {
         selectedMarket.current?.baseMint,
         connection
       );
+      console.log("base balance",baseBalance.toString())
       setBalances((prev) => ({
         ...prev,
         baseBalance: (Number(baseBalance) / 1000000000).toFixed(2),
