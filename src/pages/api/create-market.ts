@@ -23,8 +23,6 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
   try{
-
-
     const payer = OWNER_KEYPAIR 
     const wallet = new Wallet(OWNER_KEYPAIR);
     console.log("OWNER KEYPAIR: ",payer.publicKey.toString())

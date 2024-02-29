@@ -31,6 +31,7 @@ import {
   Side,
   checkOrCreateAssociatedTokenAccount,
 } from "@/solana/utils/helpers";
+import { current } from "tailwindcss/colors";
 
 type FermiStore = {
   client: OpenBookV2Client;
@@ -382,8 +383,6 @@ export const useFermiStore = create<FermiStore>()(
 
           const ooMaker = await client.deserializeOpenOrderAccount(maker);
           const ooTaker = await client.deserializeOpenOrderAccount(taker);
-          // console.log(ooMaker?.owner.toString());
-          // console.log(ooTaker?.owner.toString());
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
 
           console.log({
@@ -407,6 +406,8 @@ export const useFermiStore = create<FermiStore>()(
           );
 
           console.log("FINALISE ARGS : ", {
+            currentWallet: client.walletPk.toString(),
+            currentWalletOpenOrders : get().openOrders?.publicKey.toString(),
             maker: maker.toString(),
             taker: taker.toString(),
             makerAtaPublicKey: makerAtaPublicKey.toString(),
@@ -433,7 +434,7 @@ export const useFermiStore = create<FermiStore>()(
               slotsToConsume
             );
 
-          await client.sendAndConfirmTransaction(ixs);
+          // await client.sendAndConfirmTransaction(ixs);
           toast.success("Order Finalised");
           await get().actions.fetchOrderbook();
           await get().actions.fetchEventHeap();
