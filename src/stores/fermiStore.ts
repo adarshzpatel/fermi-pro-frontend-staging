@@ -434,7 +434,7 @@ export const useFermiStore = create<FermiStore>()(
               slotsToConsume
             );
 
-          // await client.sendAndConfirmTransaction(ixs);
+          await client.sendAndConfirmTransaction(ixs);
           toast.success("Order Finalised");
           await get().actions.fetchOrderbook();
           await get().actions.fetchEventHeap();
