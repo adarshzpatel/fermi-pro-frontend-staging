@@ -17,7 +17,6 @@ export const MARKETS: MarketType[] = [
     quoteTokenName: "USDC",
     marketPda: "CF3Eh6XKgPfTzcTVeeh1LS2yFa5KND2wyjhxUyoMokn4",
   },
-
   {
     baseTokenName: "BONK",
     quoteTokenName: "SOL",

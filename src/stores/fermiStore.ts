@@ -31,7 +31,6 @@ import {
   Side,
   checkOrCreateAssociatedTokenAccount,
 } from "@/solana/utils/helpers";
-import { current } from "tailwindcss/colors";
 
 type FermiStore = {
   client: OpenBookV2Client;
@@ -175,8 +174,10 @@ export const useFermiStore = create<FermiStore>()(
           const openOrdersAcc = await client?.deserializeOpenOrderAccount(
             openOrdersAccPk
           );
-          // console.log(JSON.stringify(openOrdersAcc?.position, null));
-
+          console.log(
+            "OPEN ORDERS POSITION ",
+            JSON.stringify(openOrdersAcc?.position, null)
+          );
           let orders: any = openOrdersAcc?.openOrders;
           // parse orders
           const orderbook = get().orderbook;
@@ -205,7 +206,10 @@ export const useFermiStore = create<FermiStore>()(
               orders: orders,
             };
           });
-          console.log("[ OPEN ORDERS ACCOUNT ]: ", JSON.stringify(get().openOrders?.publicKey));
+          console.log(
+            "[ OPEN ORDERS ACCOUNT ]: ",
+            JSON.stringify(get().openOrders?.publicKey)
+          );
         },
         fetchOrderbook: async () => {
           const client = get().client;
@@ -407,7 +411,7 @@ export const useFermiStore = create<FermiStore>()(
 
           console.log("FINALISE ARGS : ", {
             currentWallet: client.walletPk.toString(),
-            currentWalletOpenOrders : get().openOrders?.publicKey.toString(),
+            currentWalletOpenOrders: get().openOrders?.publicKey.toString(),
             maker: maker.toString(),
             taker: taker.toString(),
             makerAtaPublicKey: makerAtaPublicKey.toString(),
