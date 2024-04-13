@@ -8,16 +8,8 @@ import {
   OpenOrdersAccount,
   OutEvent,
 } from "@/solana/fermiClient";
-import { AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
-import {
-  Commitment,
-  ComputeBudgetProgram,
-  Connection,
-  Keypair,
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-} from "@solana/web3.js";
+import { AnchorProvider, BN } from "@coral-xyz/anchor";
+import { Commitment, Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { create } from "zustand";
 import { produce } from "immer";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -31,6 +23,7 @@ import {
   Side,
   checkOrCreateAssociatedTokenAccount,
 } from "@/solana/utils/helpers";
+import supabase from "@/supabase";
 
 type FermiStore = {
   client: OpenBookV2Client;
@@ -76,7 +69,8 @@ type FermiStore = {
       maker: PublicKey,
       taker: PublicKey,
       takerSide: number,
-      slotsToConsume: BN
+      slotsToConsume: BN,
+      price:any
     ) => Promise<void>;
     cancelWithPenalty: (
       maker: PublicKey,
@@ -96,7 +90,7 @@ export const initFermiClient = (provider: AnchorProvider) => {
     );
     toast("Transaction sent", { description: txid });
   };
-  const txConfirmationCommitment: Commitment = "confirmed";
+  const txConfirmationCommitment: Commitment = "processed";
   const opts = {
     postSendTxCallback,
     txConfirmationCommitment,
@@ -173,10 +167,6 @@ export const useFermiStore = create<FermiStore>()(
 
           const openOrdersAcc = await client?.deserializeOpenOrderAccount(
             openOrdersAccPk
-          );
-          console.log(
-            "OPEN ORDERS POSITION ",
-            JSON.stringify(openOrdersAcc?.position, null)
           );
           let orders: any = openOrdersAcc?.openOrders;
           // parse orders
@@ -377,7 +367,7 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
         },
-        finalise: async (maker, taker, takerSide, slotsToConsume: BN) => {
+        finalise: async (maker, taker, takerSide, slotsToConsume,price) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
           const market = get().selectedMarket?.current;
@@ -439,6 +429,17 @@ export const useFermiStore = create<FermiStore>()(
             );
 
           await client.sendAndConfirmTransaction(ixs);
+
+          const { data, error } = await supabase
+            .from("price_feed")
+            .insert([
+              {
+                price: Number(price.toString()),
+                market: marketPublicKey.toString(),
+              },
+            ])
+            .select();
+          if(error) console.log('error adding to price feed ',error);
           toast.success("Order Finalised");
           await get().actions.fetchOrderbook();
           await get().actions.fetchEventHeap();

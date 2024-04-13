@@ -1,13 +1,8 @@
 import { FillEvent } from "@/solana/fermiClient";
 import { useFermiStore } from "@/stores/fermiStore";
+import supabase from "@/supabase";
 import { BN } from "@coral-xyz/anchor";
 import { Button, ButtonGroup } from "@nextui-org/react";
-import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
-} from "@solana/wallet-adapter-react";
-import { Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -40,24 +35,18 @@ const SideCell = ({ side }: { side: string }) => {
   );
 };
 const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
-  const [
-    cancel,
-    finalise,
-    cancelWithPenalty,
-  ] = useFermiStore((s) => [
-    s.actions.cancelOrderById,
-    s.actions.finalise,
-    s.actions.cancelWithPenalty,
-    s.actions.fetchEventHeap,
-    s.actions.fetchOpenOrders,
-    s.actions.fetchOrderbook,
-  ]);
+  const [cancel, finalise, cancelWithPenalty, selectedMarket] = useFermiStore(
+    (s) => [
+      s.actions.cancelOrderById,
+      s.actions.finalise,
+      s.actions.cancelWithPenalty,
+      s.selectedMarket,
+    ]
+  );
   const oo = useFermiStore((s) => s.openOrders?.publicKey);
   const [isFinalising, setIsFinalising] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const isTaker = finaliseEvent?.taker.toString() === oo?.toString();
-  const {signTransaction,publicKey} = useWallet();
-  const { connection } = useConnection();
 
   const _side = finaliseEvent
     ? isTaker
@@ -72,13 +61,12 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
   const handleFinalise = async () => {
     try {
       if (!finaliseEvent) return;
-
-      setIsFinalising(true);
       await finalise(
         finaliseEvent.maker,
         finaliseEvent.taker,
         finaliseEvent.takerSide,
-        new BN(Number(finaliseEvent.index))
+        new BN(Number(finaliseEvent.index)),
+        finaliseEvent.price.toString()
       );
     } catch (err) {
       console.error("[FINALISE] :", err);

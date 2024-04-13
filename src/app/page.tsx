@@ -20,6 +20,7 @@ import { MARKETS } from "@/solana/constants";
 import { PublicKey } from "@solana/web3.js";
 import { toast } from "sonner";
 import { Spinner } from "@nextui-org/react";
+import TradeChart from "@/components/chart/TradeChart";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -41,7 +42,11 @@ export default function Home() {
 
   useLayoutEffect(() => {
     if (!marketParam) {
-      router.replace(`/?market=${MARKETS[0].marketPda}`);
+      const storedMarket = localStorage.getItem("selectedMarket");
+      const defaultMarket = storedMarket
+        ? JSON.parse(storedMarket)
+        : MARKETS[0];
+      router.replace(`/?market=${defaultMarket.marketPda}`);
     }
   }, [marketParam, router]);
 
@@ -53,7 +58,12 @@ export default function Home() {
       const marketAccount = await client.deserializeMarketAccount(
         new PublicKey(marketPda)
       );
-
+      console.log("[MARKET] : ", marketPda.toString(), {
+        baseToken: marketAccount?.baseMint.toString(),
+        quoteToken: marketAccount?.quoteMint.toString(),
+        baseTokenDecimals: marketAccount?.baseDecimals.toString(),
+        quoteTokenDecimals: marketAccount?.quoteDecimals.toString(),
+      });
       if (marketAccount === null) throw new Error("Market is Null");
       set((s) => {
         s.selectedMarket = {
@@ -65,6 +75,8 @@ export default function Home() {
         s.orderbook = undefined;
         s.openOrders = undefined;
       });
+
+      localStorage.setItem("selectedMarket", JSON.stringify({ marketPda }));
 
       // toast.success(
       //   "Market Changed to " + `${baseTokenName}-${quoteTokenName}`
@@ -147,7 +159,8 @@ export default function Home() {
                     defaultSize={50}
                     className="bg-gray-800 rounded-xl border border-gray-500 text-white/50 grid place-items-center text-xl "
                   >
-                    🚧 Work in Progress 🚧
+                    {/* 🚧 Work in Progress 🚧 */}
+                    <TradeChart />
                   </ResizablePanel>
                   <ResizableHandle />
                   <ResizablePanel

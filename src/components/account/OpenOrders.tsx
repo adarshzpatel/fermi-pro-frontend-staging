@@ -13,7 +13,8 @@ const OpenOrders = () => {
       openOrders?.orders?.forEach((order) => {
         const match = eventHeap?.find(
           (event: any) =>
-            event.makerClientOrderId.toString() === order.clientOrderId || event.takerClientOrderId.toString() === order.clientOrderId
+            event.makerClientOrderId.toString() === order.clientOrderId ||
+            event.takerClientOrderId.toString() === order.clientOrderId
         );
         if (match) map[order.id] = match;
       });
@@ -49,7 +50,7 @@ const OpenOrders = () => {
             </td>
           </tr>
         )}
-        {openOrders?.orders?.map((it:any) => (
+        {openOrders?.orders?.map((it: any) => (
           <OpenOrdersRow
             key={`order-${it.id}`}
             id={it.clientOrderId}

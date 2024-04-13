@@ -1,5 +1,5 @@
-
 import { useFermiStore } from "@/stores/fermiStore";
+import supabase from "@/supabase";
 import { BN } from "@coral-xyz/anchor";
 import {
   Modal,
@@ -26,7 +26,7 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   const [processing, setProcessing] = useState(false);
   const [txHash, setTxHash] = useState("");
   const connectedWallet = useAnchorWallet();
-  const currentMarket = useFermiStore(s=>s.selectedMarket);
+  const currentMarket = useFermiStore((s) => s.selectedMarket);
   const client = useFermiStore((state) => state.client);
   const fetchOpenOrders = useFermiStore(
     (state) => state.actions.fetchOpenOrders
@@ -60,11 +60,13 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
       }
 
       // If user does not have an openOrdersAccount, create one
-      const allOpenOrders = await client.findAllOpenOrders(client.walletPk);
+      const indexer = await client.findOpenOrdersIndexer(
+        connectedWallet.publicKey
+      );
 
       console.group("Create Open Orders Account");
 
-      const [ixs] = await client.createOpenOrdersIx(
+      const [ixs, account] = await client.createOpenOrdersIx(
         marketPublicKey,
         accountName,
         connectedWallet.publicKey,
@@ -73,10 +75,22 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
       console.log(client.walletPk);
       const tx = await client.sendAndConfirmTransaction(ixs, {});
       setTxHash(tx);
-      // await fetchOpenOrders();
-      console.log("Created open orders account ", { tx });
+
+      // TODO If success , save this new open orders account to supabase db
+      // const { error } = await supabase.from("accounts").insert({
+      //   owner: connectedWallet.publicKey.toString(),
+      //   market: currentMarket.publicKey.toString(),
+      //   address: account.toString(),
+      //   indexer: indexer?.toString() || null,
+      // });
+
+      // if (error) {
+      //   console.error("Error inserting into Supabase:", error);
+      // } else {
+      //   console.log("Open orders account inserted into Supabase");
+      // }
+      // console.log("Created open orders account ", { tx });
       await fetchOpenOrders();
-      // closeModal();
     } catch (err: any) {
       const message = err?.message || "Failed to place order";
       toast.error(message);

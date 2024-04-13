@@ -13,18 +13,8 @@ export type MarketType = {
 
 export const MARKETS: MarketType[] = [
   {
-    baseTokenName: "SOL",
-    quoteTokenName: "USDC",
-    marketPda: "CF3Eh6XKgPfTzcTVeeh1LS2yFa5KND2wyjhxUyoMokn4",
-  },
-  {
     baseTokenName: "BONK",
     quoteTokenName: "SOL",
     marketPda: "Eh4VvHRezE7TGXwkdqXpSRKkcDA1zhy19tVX4dxYDG7U",
-  },
-  {
-    baseTokenName: "DOGE",
-    quoteTokenName: "SOL",
-    marketPda: "4xnuH1nrpX61quSmZ6oHNdwyv85cX3eaYEA7Bvhtb1Am",
   },
 ];
