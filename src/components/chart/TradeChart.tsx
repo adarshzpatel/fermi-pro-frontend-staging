@@ -4,6 +4,7 @@ import supabase from "@/supabase";
 import { useFermiStore } from "@/stores/fermiStore";
 import { Spinner } from "@nextui-org/react";
 import { AreaData, Time, WhitespaceData } from "lightweight-charts";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 type Props = {};
 
@@ -43,7 +44,7 @@ const TradeChart = (props: Props) => {
   };
 
   useEffect(() => {
-    let channel = null;
+    let channel:RealtimeChannel | null = null;
     const marketString = selectedMarket?.publicKey.toString();
     if (marketString) {
       fetchInitialData(marketString);

@@ -41,6 +41,7 @@ export const ChartComponent = ({
       width: chartContainerRef.current.clientWidth - 4,
       height: chartContainerRef.current.clientHeight - 4,
     });
+    
     chart.timeScale().fitContent();
 
     if (data === undefined) return;
@@ -51,13 +52,13 @@ export const ChartComponent = ({
       lineWidth: 2,
       bottomColor: colors?.areaBottomColor,
     });
+
     newSeries.setData(data);
 
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-
       chart.remove();
     };
   }, [
