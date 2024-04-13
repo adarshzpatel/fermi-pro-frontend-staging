@@ -5,7 +5,7 @@ import { useFermiStore } from "@/stores/fermiStore";
 import { Button } from "@nextui-org/react";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import axios from "axios";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { toast } from "sonner";
 import { PublicKey } from "@solana/web3.js";
