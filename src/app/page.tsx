@@ -58,12 +58,12 @@ export default function Home() {
       const marketAccount = await client.deserializeMarketAccount(
         new PublicKey(marketPda)
       );
-      console.log("[MARKET] : ", marketPda.toString(), {
-        baseToken: marketAccount?.baseMint.toString(),
-        quoteToken: marketAccount?.quoteMint.toString(),
-        baseTokenDecimals: marketAccount?.baseDecimals.toString(),
-        quoteTokenDecimals: marketAccount?.quoteDecimals.toString(),
-      });
+      // console.log("[MARKET] : ", marketPda.toString(), {
+      //   baseToken: marketAccount?.baseMint.toString(),
+      //   quoteToken: marketAccount?.quoteMint.toString(),
+      //   baseTokenDecimals: marketAccount?.baseDecimals.toString(),
+      //   quoteTokenDecimals: marketAccount?.quoteDecimals.toString(),
+      // });
       if (marketAccount === null) throw new Error("Market is Null");
       set((s) => {
         s.selectedMarket = {

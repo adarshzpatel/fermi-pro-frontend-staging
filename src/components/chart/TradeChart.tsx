@@ -26,7 +26,6 @@ const TradeChart = (props: Props) => {
           .eq("market", marketString);
 
         if (res?.data) {
-          console.log(res);
           // convert the timestampz to UTC timestamp
           const chartData = res.data.map((it) => ({
             time: Date.parse(it.timestamp) / 1000,

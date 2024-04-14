@@ -19,6 +19,7 @@ const OpenOrders = () => {
         if (match) map[order.id] = match;
       });
     }
+    console.log('[Open Orders]: ', openOrders?.orders)
     console.log("[FINALISABLE EVENTS ]", map);
     return map;
   }, [openOrders, eventHeap]);
