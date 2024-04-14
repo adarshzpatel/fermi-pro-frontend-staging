@@ -86,7 +86,7 @@ export async function sendTransaction(
   }
 
   const txConfirmationCommitment =
-    opts?.txConfirmationCommitment ?? "processed";
+    opts?.txConfirmationCommitment ?? "confirmed";
   let status: any;
   if (
     latestBlockhash.blockhash != null &&

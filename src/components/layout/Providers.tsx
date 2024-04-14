@@ -40,7 +40,7 @@ const SolanaWalletProviders = ({ children }: ProviderProps) => {
     <>
       <ConnectionProvider
         endpoint={endpoint}
-        config={{ commitment: "processed" }}
+        config={{ commitment: "confirmed" }}
       >
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>{children}</WalletModalProvider>

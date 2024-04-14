@@ -90,7 +90,7 @@ export const initFermiClient = (provider: AnchorProvider) => {
     );
     toast("Transaction sent", { description: txid });
   };
-  const txConfirmationCommitment: Commitment = "processed";
+  const txConfirmationCommitment: Commitment = "confirmed";
   const opts = {
     postSendTxCallback,
     txConfirmationCommitment,
