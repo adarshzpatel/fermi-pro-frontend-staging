@@ -16,7 +16,7 @@ const Orderbook = (props: Props) => {
   const [bids, setBids] = useState([]);
   const connectedWallet = useAnchorWallet();
   const [isWsConnected, setIsWsConnected] = useState(false);
-  const { fetchOpenOrders, fetchEventHeap } = useFermiStore((s) => s.actions);
+
 
   useEffect(() => {
     let ws: WebSocket | null = null;
@@ -50,7 +50,6 @@ const Orderbook = (props: Props) => {
         setIsWsConnected(false);
         console.log("WebSocket connection closed");
         // Try to reconnect after a delay
-        setTimeout(connectWebSocket, 1000);
       };
 
       ws.onerror = (err) => {
