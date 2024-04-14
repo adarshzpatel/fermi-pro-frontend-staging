@@ -6,7 +6,7 @@ import { useFermiStore } from "@/stores/fermiStore";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import WebSocketStatus from "./WebsocketStatus";
 
-const wsUrl = "ws://3.6.83.91:8080/";
+const wsUrl = "wss://api.fermilabs.xyz";
 
 type Props = {};
 

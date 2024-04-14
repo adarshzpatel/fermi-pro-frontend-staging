@@ -69,10 +69,7 @@ const TradeChart = (props: Props) => {
       );
 
       channel.subscribe((status) => {
-        console.log("-------------");
-        console.log("-SUPABASE CHANNNEL STATUS-");
-        console.log(status);
-        console.log("-------------");
+        console.log('Trade chart connected.')
       });
     }
     return () => {
