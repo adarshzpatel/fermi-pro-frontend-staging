@@ -43,7 +43,7 @@ const TradeChart = (props: Props) => {
   };
 
   useEffect(() => {
-    let channel:RealtimeChannel | null = null;
+    let channel: RealtimeChannel | null = null;
     const marketString = selectedMarket?.publicKey.toString();
     if (marketString) {
       fetchInitialData(marketString);
@@ -57,9 +57,9 @@ const TradeChart = (props: Props) => {
         },
         (payload) => {
           const newData = payload.new as any;
-          if(newData) {
+          if (newData) {
             const chartData = {
-              time: Date.parse(newData.created_at) / 1000,
+              time: Date.parse(newData.timestamp) / 1000,
               value: newData.price,
             };
             setData((prevData) => [...prevData, chartData] as ChartDataType);
@@ -68,7 +68,7 @@ const TradeChart = (props: Props) => {
       );
 
       channel.subscribe((status) => {
-        console.log('Trade chart connected.')
+        console.log("Trade chart connected.");
       });
     }
     return () => {
