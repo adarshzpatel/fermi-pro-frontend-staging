@@ -22,7 +22,7 @@ export default async function handler(
 ) {
   const destinationAddress = req.body?.destinationAddress;
   const mint = req.body?.mint;
-  const amount = Number(req.body?.amount);
+const amount = Number(req.body?.amount);
   if (!destinationAddress || !mint || !amount)
     res.status(500).send("Invalid inputs");
 
