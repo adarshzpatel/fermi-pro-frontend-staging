@@ -51,16 +51,13 @@ const Orderbook = (props: Props) => {
 
       websocket.onclose = () => {
         setIsWsConnected(false);
-        console.log("WebSocket connection closed");
         // Try to reconnect after a delay
-        console.log("Reconnecting...");
         toast.error("WebSocket connection closed. Reconnecting...");
         setTimeout(connectWebSocket, 100);
       };
 
       websocket.onerror = (err) => {
         setIsWsConnected(false);
-        console.error("WebSocket connection error", err);
         // Try to reconnect after a delay
         setTimeout(connectWebSocket, 1000);
       };

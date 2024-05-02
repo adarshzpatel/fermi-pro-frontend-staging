@@ -33,14 +33,12 @@ export async function airdropToken({
     );
 
     if ((await connection.getAccountInfo(receiverTokenAccount)) == null) {
-      console.log("ATA not found, creating one...");
-    await createAssociatedTokenAccount(
+      await createAssociatedTokenAccount(
         provider,
         new anchor.web3.PublicKey(mint),
         receiverTokenAccount,
         receiverPk
       );
-      console.log("✅ ATA created for ", receiverPk.toString());
     }
 
     await mintTo(
@@ -49,12 +47,6 @@ export async function airdropToken({
       receiverTokenAccount,
       BigInt(amount.toString())
     );
-
-    console.log(
-      "✅ Tokens minted successfully to ",
-      receiverTokenAccount.toString()
-    );
-
     // return receiverTokenAccount;
   } catch (err) {
     console.log("Something went wrong while airdropping coin token.");

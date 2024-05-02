@@ -76,20 +76,6 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
       const tx = await client.sendAndConfirmTransaction(ixs, {});
       setTxHash(tx);
 
-      // TODO If success , save this new open orders account to supabase db
-      // const { error } = await supabase.from("accounts").insert({
-      //   owner: connectedWallet.publicKey.toString(),
-      //   market: currentMarket.publicKey.toString(),
-      //   address: account.toString(),
-      //   indexer: indexer?.toString() || null,
-      // });
-
-      // if (error) {
-      //   console.error("Error inserting into Supabase:", error);
-      // } else {
-      //   console.log("Open orders account inserted into Supabase");
-      // }
-      // console.log("Created open orders account ", { tx });
       await fetchOpenOrders();
     } catch (err: any) {
       const message = err?.message || "Failed to place order";

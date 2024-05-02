@@ -10,6 +10,7 @@ const OpenOrders = () => {
   const canFinalise = useMemo(() => {
     let map: { [x: string]: any } = {};
     if (eventHeap != undefined && openOrders != undefined) {
+      // check if the order is in the event heap
       openOrders?.orders?.forEach((order) => {
         const match = eventHeap?.find(
           (event: any) =>
@@ -19,8 +20,6 @@ const OpenOrders = () => {
         if (match) map[order.id] = match;
       });
     }
-    console.log('[Open Orders]: ', openOrders?.orders)
-    console.log("[FINALISABLE EVENTS ]", map);
     return map;
   }, [openOrders, eventHeap]);
 

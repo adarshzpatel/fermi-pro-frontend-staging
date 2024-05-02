@@ -144,12 +144,10 @@ export const useFermiStore = create<FermiStore>()(
             eventHeapPk
           );
           const parsedEventHeap = parseEventHeap(client, eventHeapAcc);
-          console.log({ eventHeapAcc, parsedEventHeap });
-          // console.log({ parsedEventHeap });
+
           get().set((s) => {
             s.eventHeap = parsedEventHeap;
           });
-          console.log("[ EVENT HEAP ]: ", get().eventHeap);
         },
         fetchOpenOrders: async () => {
           const client = get().client;
@@ -224,7 +222,6 @@ export const useFermiStore = create<FermiStore>()(
               asks,
             };
           });
-          console.log("[ ORDERBOOK ] : ", get().orderbook);
         },
         cancelOrderById: async (id: string) => {
           const client = get().client;
@@ -362,7 +359,6 @@ export const useFermiStore = create<FermiStore>()(
             .instruction();
 
           await client.sendAndConfirmTransaction([ix]);
-          console.log("cancelled with penalty");
           await get().actions.fetchOrderbook();
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
@@ -504,6 +500,5 @@ export const parseEventHeap = (
       }
     });
   }
-  // console.log({ fillEvents, outEvents });
   return fillEvents;
 };

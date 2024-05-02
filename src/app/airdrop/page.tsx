@@ -38,14 +38,9 @@ const Airdrop = () => {
 
   const findAndSetMarket = async (marketPk: string) => {
     try {
-      console.log("[MARKET] Fetching ... ");
       const { marketPda, baseTokenName, quoteTokenName } =
         MARKETS.find((it) => it.marketPda === marketPk) ?? MARKETS[0];
-      console.log(
-        "[MARKET IDENTIFIED] ",
-        `${baseTokenName}-${quoteTokenName} |`,
-        marketPda
-      );
+
       const marketAccount = await client.deserializeMarketAccount(
         new PublicKey(marketPda)
       );
@@ -60,7 +55,6 @@ const Airdrop = () => {
         };
       });
 
-      console.log("[MARKET] Fetch Succesfull");
     } catch (err: any) {
       console.log("[MARKET]", err);
       toast.error("Market Not Found");
@@ -87,7 +81,6 @@ const Airdrop = () => {
         selectedMarket.current?.quoteMint,
         connection
       );
-      console.log("Quote balance",quoteBalance.toString())
       setBalances((prev) => ({
         ...prev,
         quoteBalance: (Number(quoteBalance) / 1000000).toFixed(2),
@@ -114,7 +107,7 @@ const Airdrop = () => {
         selectedMarket.current?.baseMint,
         connection
       );
-      console.log("base balance",baseBalance.toString())
+
       setBalances((prev) => ({
         ...prev,
         baseBalance: (Number(baseBalance) / 1000000000).toFixed(2),
@@ -136,9 +129,7 @@ const Airdrop = () => {
         mint,
         amount,
       };
-      console.log(data);
-      const res = await axios.post("/api/airdrop", data);
-      console.log(res.data);
+      await axios.post("/api/airdrop", data);
       await getBaseBalance();
       await getQuoteBalance();
       toast.success("Airdrop Successful ✅");
