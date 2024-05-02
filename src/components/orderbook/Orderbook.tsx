@@ -5,12 +5,14 @@ import Asks from "./Asks";
 import { useFermiStore } from "@/stores/fermiStore";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import WebSocketStatus from "./WebsocketStatus";
+import { toast } from "sonner";
 
 const wsUrl = "wss://api.fermilabs.xyz";
 
 type Props = {};
 
 const Orderbook = (props: Props) => {
+  const [ws,setWs] = useState<WebSocket | null>(null);
   const selectedMarket = useFermiStore((s) => s.selectedMarket);
   const [asks, setAsks] = useState([]);
   const [bids, setBids] = useState([]);
@@ -19,16 +21,17 @@ const Orderbook = (props: Props) => {
 
 
   useEffect(() => {
-    let ws: WebSocket | null = null;
 
     const connectWebSocket = () => {
-      ws = new WebSocket(wsUrl);
+      if(ws?.OPEN || ws?.CONNECTING) return
+      const websocket = new WebSocket(wsUrl);
+      setWs(websocket);
 
-      ws.onopen = () => {
+      websocket.onopen = () => {
         setIsWsConnected(true);
-        console.log("WebSocket connection established");
+        toast.success("Orderbook connected.");
         // Subscribe to the selected market
-        ws?.send(
+        websocket.send(
           JSON.stringify({
             type: "subscribe",
             subscriberPublicKey: connectedWallet?.publicKey?.toBase58(),
@@ -37,7 +40,7 @@ const Orderbook = (props: Props) => {
         );
       };
 
-      ws.onmessage = (event) => {
+      websocket.onmessage = (event) => {
         const message = JSON.parse(event.data);
         if (message.type === "bids") {
           setBids(message.data);
@@ -46,17 +49,20 @@ const Orderbook = (props: Props) => {
         }
       };
 
-      ws.onclose = () => {
+      websocket.onclose = () => {
         setIsWsConnected(false);
         console.log("WebSocket connection closed");
         // Try to reconnect after a delay
+        console.log("Reconnecting...");
+        toast.error("WebSocket connection closed. Reconnecting...");
+        setTimeout(connectWebSocket, 100);
       };
 
-      ws.onerror = (err) => {
+      websocket.onerror = (err) => {
         setIsWsConnected(false);
         console.error("WebSocket connection error", err);
         // Try to reconnect after a delay
-        setTimeout(connectWebSocket, 3000);
+        setTimeout(connectWebSocket, 1000);
       };
     };
 
