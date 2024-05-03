@@ -20,7 +20,9 @@ const OpenOrders = () => {
         if (match) map[order.id] = match;
       });
     }
+
     return map;
+
   }, [openOrders, eventHeap]);
 
   return (

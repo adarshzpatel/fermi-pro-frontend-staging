@@ -48,15 +48,6 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
   const [isCancelling, setIsCancelling] = useState(false);
   const isTaker = finaliseEvent?.taker.toString() === oo?.toString();
 
-  const _side = finaliseEvent
-    ? isTaker
-      ? finaliseEvent.takerSide === 0
-        ? "bid"
-        : "ask"
-      : finaliseEvent.takerSide === 0
-      ? "ask"
-      : "bid"
-    : side;
 
   const handleFinalise = async () => {
     try {
@@ -95,7 +86,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
         finaliseEvent.maker,
         finaliseEvent.taker,
         finaliseEvent.takerSide,
-        _side,
+        side,
         new BN(finaliseEvent.index)
       );
     } catch (err) {
@@ -114,7 +105,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
     <tr className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out">
       <td className="py-3 pl-4 text-left w-4">{id}</td>
       <td>
-        <SideCell side={_side} />
+        <SideCell side={side} />
       </td>
       <td>{lockedPrice}</td>
       <td className="flex items-center justify-end pr-4 py-3">
