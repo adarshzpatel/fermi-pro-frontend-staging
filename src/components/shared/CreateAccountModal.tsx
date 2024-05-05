@@ -72,7 +72,6 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
         connectedWallet.publicKey,
         null
       );
-      console.log(client.walletPk);
       const tx = await client.sendAndConfirmTransaction(ixs, {});
       setTxHash(tx);
 

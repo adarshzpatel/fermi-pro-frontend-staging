@@ -35,7 +35,7 @@ const SideCell = ({ side }: { side: string }) => {
   );
 };
 const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
-  const [cancel, finalise, cancelWithPenalty, selectedMarket] = useFermiStore(
+  const [cancel, finalise, cancelWithPenalty] = useFermiStore(
     (s) => [
       s.actions.cancelOrderById,
       s.actions.finalise,
@@ -46,7 +46,6 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
   const oo = useFermiStore((s) => s.openOrders?.publicKey);
   const [isFinalising, setIsFinalising] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const isTaker = finaliseEvent?.taker.toString() === oo?.toString();
 
 
   const handleFinalise = async () => {

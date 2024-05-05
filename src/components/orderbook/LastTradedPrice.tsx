@@ -27,7 +27,6 @@ const LastTradedPrice = (props: Props) => {
           console.error("[LAST_TRADED_PRICE] :", error);
           return;
         }
-        console.log(data);
         if(data?.length > 0){
           const price = data?.[0]?.["price"];
           if (price) setLastTradedPrice(price);

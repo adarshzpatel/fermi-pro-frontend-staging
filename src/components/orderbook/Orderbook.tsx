@@ -21,7 +21,6 @@ const Orderbook = (props: Props) => {
 
 
   useEffect(() => {
-
     const connectWebSocket = () => {
       if(ws?.OPEN || ws?.CONNECTING) return
       const websocket = new WebSocket(wsUrl);
@@ -67,6 +66,8 @@ const Orderbook = (props: Props) => {
       connectWebSocket();
     }
 
+    console.log({bids,asks});
+    
     return () => {
       // Clean up the WebSocket connection when the component unmounts
       if (ws) {
@@ -96,7 +97,6 @@ const Orderbook = (props: Props) => {
             </span>
           </div>
         </div>
-
         <Asks data={asks} />
         <LastTradedPrice />
         <Bids data={bids} />

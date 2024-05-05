@@ -167,20 +167,15 @@ export const useFermiStore = create<FermiStore>()(
             openOrdersAccPk
           );
           let orders: any = openOrdersAcc?.openOrders;
-          // parse orders
-          const orderbook = get().orderbook;
+
 
           if (orders) {
             orders = orders.filter((i: any) => i.isFree === 0);
             orders = orders.map((i: any) => {
               let side = "none";
-              if (orderbook?.bids?.find((it) => it.key === i.id.toString()))
-                side = "bid";
-              if (orderbook?.asks?.find((it) => it.key === i.id.toString()))
-                side = "ask";
-              return {
+              return {                
                 clientOrderId: i.clientId.toString(),
-                side,
+                side: i.sideAndTree === 0 ? 'bid' : 'ask',
                 lockedPrice: i.lockedPrice.toString(),
                 id: i.id.toString(),
               };
@@ -360,6 +355,7 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
         },
+
         finalise: async (maker, taker, takerSide, slotsToConsume,price) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
@@ -371,10 +367,6 @@ export const useFermiStore = create<FermiStore>()(
           const ooMaker = await client.deserializeOpenOrderAccount(maker);
           const ooTaker = await client.deserializeOpenOrderAccount(taker);
           if (!ooMaker || !ooTaker) throw new Error("Open orders not found");
-
-          console.log({
-            slotsToConsume,
-          });
 
           // taker Side = 0 ( bid ) , 1 = (ask)
           const makerAtaPublicKey = new PublicKey(
@@ -391,7 +383,7 @@ export const useFermiStore = create<FermiStore>()(
               ooTaker?.owner
             )
           );
-
+          console.log("EVENT HEAP : ", get().eventHeap)
           console.log("FINALISE ARGS : ", {
             currentWallet: client.walletPk.toString(),
             currentWalletOpenOrders: get().openOrders?.publicKey.toString(),
@@ -406,6 +398,7 @@ export const useFermiStore = create<FermiStore>()(
             baseToken: market.baseMint.toString(),
             quoteToken: market.quoteMint.toString(),
           });
+
 
           const [ixs, signers] =
             await client.createFinalizeGivenEventsInstruction(

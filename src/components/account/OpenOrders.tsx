@@ -52,7 +52,9 @@ const OpenOrders = () => {
             </td>
           </tr>
         )}
-        {openOrders?.orders?.map((it: any) => (
+        {openOrders?.orders?.map((it: any) => {
+        
+          return (
           <OpenOrdersRow
             key={`order-${it.id}`}
             id={it.clientOrderId}
@@ -60,7 +62,7 @@ const OpenOrders = () => {
             finaliseEvent={canFinalise[it.id]}
             lockedPrice={it.lockedPrice}
           />
-        ))}
+        )})}
       </tbody>
     </table>
   );

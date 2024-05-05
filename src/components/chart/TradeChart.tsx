@@ -68,7 +68,7 @@ const TradeChart = (props: Props) => {
       );
 
       channel.subscribe((status) => {
-        console.log("Trade chart connected.");
+        return
       });
     }
     return () => {
