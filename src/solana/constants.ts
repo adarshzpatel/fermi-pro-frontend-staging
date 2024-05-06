@@ -15,7 +15,7 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: "TEST",
     quoteTokenName: "SOL",
-    marketPda: "C3rYxfxh1qRm2D1M6Egsy9dv7q6ktFxMacKQbKawd2ot",
+    marketPda: "95EJEn1owV83yPsVfyaN7y8buBsEpNd5p8yqWf8FuDmW",
   },
   {
     baseTokenName: "BONK",
