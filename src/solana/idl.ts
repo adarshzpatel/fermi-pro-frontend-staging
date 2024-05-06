@@ -2164,6 +2164,14 @@ export interface OpenbookV2 {
             }
           },
           {
+            "name": "total_approved_base",
+            "type": "u64"
+          },
+          {
+            "name": "total_approved_quote",
+            "type": "u64"
+          },
+          {
             "name": "position",
             "type": {
               "defined": "Position"
@@ -5933,6 +5941,14 @@ export interface OpenbookV2 {
                   2
                 ]
               }
+            },
+            {
+              "name": "total_approved_base",
+              "type": "u64"
+            },
+            {
+              "name": "total_approved_quote",
+              "type": "u64"
             },
             {
               "name": "position",
@@ -9802,6 +9818,14 @@ export interface OpenbookV2 {
             }
           },
           {
+            "name": "total_approved_base",
+            "type": "u64"
+          },
+          {
+            "name": "total_approved_quote",
+            "type": "u64"
+          },
+          {
             "name": "position",
             "type": {
               "defined": "Position"
@@ -13570,6 +13594,14 @@ export interface OpenbookV2 {
                   2
                 ]
               }
+            },
+            {
+              "name": "total_approved_base",
+              "type": "u64"
+            },
+            {
+              "name": "total_approved_quote",
+              "type": "u64"
             },
             {
               "name": "position",

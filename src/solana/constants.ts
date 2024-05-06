@@ -3,7 +3,7 @@ export const RPC_URL = {
     "https://devnet.helius-rpc.com/?api-key=5163c3d1-8082-442e-8a15-c27bff3cfabb",
 };
 export const FERMI_DEVNET_PROGRAM_ID =
-  "DLisWw99mbFRajC9aLCk1kE9xBLVTQjvkGy7i6q9PpfD";
+  "6pYD7cBvgQMCBHWQaKzL7k1qfBuG9RpFB2hmbszd4u1A";
 
 export type MarketType = {
   baseTokenName: string;
@@ -15,12 +15,12 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: "TEST",
     quoteTokenName: "SOL",
-    marketPda: "NyQXaS1suj11LfiTHG6tHNHYEbf1KUZB1JaucyhArVY",
+    marketPda: "C3rYxfxh1qRm2D1M6Egsy9dv7q6ktFxMacKQbKawd2ot",
   },
   {
     baseTokenName: "BONK",
     quoteTokenName: "SOL",
-    marketPda: "9yZS8s7bC2kXRvd1TTDG2ApDtLT8qKWm1CDpprCXfRVt",
+    marketPda: "DFrVQZeppfRQCjpa7K3MNmbhJYF9yTWpUUt2v9iFZmie",
   },
 
 ];
