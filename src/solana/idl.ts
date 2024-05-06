@@ -2164,18 +2164,18 @@ export interface OpenbookV2 {
             }
           },
           {
+            "name": "position",
+            "type": {
+              "defined": "Position"
+            }
+          },
+          {
             "name": "total_approved_base",
             "type": "u64"
           },
           {
             "name": "total_approved_quote",
             "type": "u64"
-          },
-          {
-            "name": "position",
-            "type": {
-              "defined": "Position"
-            }
           },
           {
             "name": "openOrders",
@@ -5943,18 +5943,18 @@ export interface OpenbookV2 {
               }
             },
             {
+              "name": "position",
+              "type": {
+                "defined": "Position"
+              }
+            },
+            {
               "name": "total_approved_base",
               "type": "u64"
             },
             {
               "name": "total_approved_quote",
               "type": "u64"
-            },
-            {
-              "name": "position",
-              "type": {
-                "defined": "Position"
-              }
             },
             {
               "name": "openOrders",
@@ -9818,18 +9818,18 @@ export interface OpenbookV2 {
             }
           },
           {
+            "name": "position",
+            "type": {
+              "defined": "Position"
+            }
+          },
+          {
             "name": "total_approved_base",
             "type": "u64"
           },
           {
             "name": "total_approved_quote",
             "type": "u64"
-          },
-          {
-            "name": "position",
-            "type": {
-              "defined": "Position"
-            }
           },
           {
             "name": "openOrders",
@@ -13596,18 +13596,18 @@ export interface OpenbookV2 {
               }
             },
             {
+              "name": "position",
+              "type": {
+                "defined": "Position"
+              }
+            },
+            {
               "name": "total_approved_base",
               "type": "u64"
             },
             {
               "name": "total_approved_quote",
               "type": "u64"
-            },
-            {
-              "name": "position",
-              "type": {
-                "defined": "Position"
-              }
             },
             {
               "name": "openOrders",

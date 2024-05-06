@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Copyable from "../shared/Copyable";
-import { MARKETS } from "@/solana/constants";
 import { Button } from "@nextui-org/react";
 import { useFermiStore } from "@/stores/fermiStore";
 import AccountNotFound from "./AccountNotFound";
@@ -9,17 +8,14 @@ import {
   toUiDecimals,
   toUiDecimalsForQuote,
 } from "@/solana/utils/helpers";
-import { PublicKey } from "@solana/web3.js";
 import { toast } from "sonner";
-import { airdropToken } from "@/solana/utils/airdropToken";
-import axios from "axios";
-
 const SettleBalances = () => {
   const [processing, setProcessing] = useState(false);
   const selectedMarket = useFermiStore((s) => s.selectedMarket);
   const openOrders = useFermiStore((s) => s.openOrders);
   const client = useFermiStore((s) => s.client);
-
+  const fetchOpenOrders = useFermiStore((s)=>s.actions.fetchOpenOrders)
+  
   const handleSettleFunds = async () => {
     try {
       if (!openOrders || !openOrders.account)
@@ -37,6 +33,7 @@ const SettleBalances = () => {
         .sendAndConfirmTransaction([ix], {
           additionalSigners: signers,
         })
+        await fetchOpenOrders()
     } catch (err) {
       console.log("Error settling funds : ", err);
       toast.error("Failed to settle funds.");
