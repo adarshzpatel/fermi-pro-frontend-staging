@@ -60,7 +60,7 @@ const SettleBalances = () => {
           ) : (
             <>
               <tr className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out">
-                <td className="text-left py-3 pl-4">Base (SOL)</td>
+                <td className="text-left py-3 pl-4">Base ({selectedMarket?.baseTokenName})</td>
                 <td className="py-3 px">
                   <Copyable
                     textToCopy={shortenAddress(
@@ -82,7 +82,7 @@ const SettleBalances = () => {
                 </td>
               </tr>
               <tr className="text-center border-y border-gray-700  hover:bg-gray-700/25 duration-200 ease-out">
-                <td className="text-left py-3 pl-4">Quote (USDC)</td>
+                <td className="text-left py-3 pl-4">Quote ({selectedMarket?.quoteTokenName})</td>
                 <td className="py-3 px-4 ">
                   <Copyable
                     textToCopy={shortenAddress(
