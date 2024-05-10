@@ -21,6 +21,7 @@ import { PublicKey } from "@solana/web3.js";
 import { toast } from "sonner";
 import { Spinner } from "@nextui-org/react";
 import TradeChart from "@/components/chart/TradeChart";
+import TutorialPopover from "@/components/TutorialPopover";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -179,6 +180,8 @@ export default function Home() {
             Please connect wallet to continue !!
           </div>
         )}
+
+        <TutorialPopover/>
       </main>
     </>
   );

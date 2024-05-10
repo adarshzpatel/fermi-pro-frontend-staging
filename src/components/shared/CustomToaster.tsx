@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 const CustomToaster = () => {
   return (
     <Toaster
+      position="top-center"
       theme="dark"
       richColors
       toastOptions={{
