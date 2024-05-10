@@ -177,7 +177,7 @@ export default function Home() {
           )
         ) : (
           <div className="bg-gray-900 rounded-xl p-4 flex-1 text-3xl grid place-items-center text-white/60 border border-gray-600 shadow-xl">
-            Please connect wallet to continue !!
+            Please connect wallet to continue.
           </div>
         )}
 
