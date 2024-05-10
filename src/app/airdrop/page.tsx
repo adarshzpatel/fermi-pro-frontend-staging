@@ -134,7 +134,7 @@ const Airdrop = () => {
       await getQuoteBalance();
       toast.success("Airdrop Successful ✅");
     } catch (err) {
-      toast.error("Failed to send airdrop!!");
+      toast.error("Failed to send airdrop.");
       console.log(err);
     } finally {
       setIsLoading(false);
