@@ -67,8 +67,6 @@ export function nameToString(name: number[]): string {
 const BooksideSpace = 90944 + 8;
 const EventHeapSpace = 91280 + 8;
 
-
-
 export class FermiClient {
   public program: Program<OpenbookV2>;
 
@@ -1038,28 +1036,20 @@ export class FermiClient {
       // Add other accounts as required by the instruction
     };
 
-<<<<<<< Updated upstream
-    const argsForAtomicFinalizeGivenEvents = [
-      { name: "slots", type: { vec: slotsToConsume } },
-      // Add other arguments as required by the method's signature
-    ];
-    const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
-      units: 300000
-=======
     const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
       units: 300000,
->>>>>>> Stashed changes
     });
 
     const ix = await this.program.methods
       .atomicFinalizeGivenEvents(slotsToConsume)
-      .accounts(accounts).preInstructions([modifyComputeUnits])
+      .accounts(accounts)
+      .preInstructions([modifyComputeUnits])
       .instruction();
 
     const signers: Signer[] = [];
     // Add any additional signers if necessary
 
-    return [[modifyComputeUnits,ix], signers];
+    return [[modifyComputeUnits, ix], signers];
   }
 
   public async createCancelGivenEventIx(
