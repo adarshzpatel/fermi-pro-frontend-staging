@@ -1,6 +1,7 @@
-import { nextui } from '@nextui-org/react'
+import {blue, gray, indigo} from 'tailwindcss/colors'
+
 import type { Config } from 'tailwindcss'
-import {gray,indigo,blue} from 'tailwindcss/colors'
+import { nextui } from '@nextui-org/react'
 
 const config: Config = {
   content: [
@@ -31,6 +32,10 @@ const config: Config = {
         secondary:{
           ...blue,
           DEFAULT:blue["400"],
+        },
+        default:{
+          DEFAULT:gray["600"],
+          ...gray,
         }
       }
     }

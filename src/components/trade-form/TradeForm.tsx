@@ -1,30 +1,52 @@
+import {
+  Button,
+  Checkbox,
+  Select,
+  SelectItem,
+  Tab,
+  Tabs,
+  useDisclosure,
+} from "@nextui-org/react";
 import React, { FormEvent, useState } from "react";
-import MarketList from "./MarketList";
-import { Button, Tab, Tabs, useDisclosure } from "@nextui-org/react";
-import { NumericFormat } from "react-number-format";
-import { useFermiStore } from "@/stores/fermiStore";
+
 import { BN } from "@coral-xyz/anchor";
-import { toast } from "sonner";
 import CreateAccountModal from "../shared/CreateAccountModal";
+import MarketList from "./MarketList";
+import { NumericFormat } from "react-number-format";
+import { set } from "lodash";
+import { toast } from "sonner";
+import { useFermiStore } from "@/stores/fermiStore";
 
 type FormDataType = {
   size: string;
   price: string;
   side: "bid" | "ask";
+  type: "market" | "limit";
 };
 
 const DEFAULT_FORM_STATE: FormDataType = {
   size: "",
   price: "",
   side: "bid",
+  type: "limit",
 };
 
 const TradeForm = () => {
   const [formData, setFormData] = useState(DEFAULT_FORM_STATE);
+  /**
+   * Auto Settlement ( Show in market order )
+   * -> If true , call finalise market from our side
+   * -> If false , give option to user to finalise the order
+   * Default is true
+   */
+  const [autoSettlement, setAutoSettlement] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const placeOrder = useFermiStore((s) => s.actions.placeOrder);
+  const [placeOrder, placeMarketOrder] = useFermiStore((s) => [
+    s.actions.placeOrder,
+    s.actions.placeMarketOrder,
+  ]);
   const oo = useFermiStore((s) => s.openOrders);
-  
+
   const {
     isOpen: isCreateAccountModalOpen,
     onOpen: openCreateAccountModal,
@@ -46,20 +68,25 @@ const TradeForm = () => {
       // check if open orders account exist
       // if not, open create open orders account modal
       if (!oo) {
-        toast.warning("Create an account first !")
+        toast.warning("Create an account first !");
         openCreateAccountModal();
         return;
       }
+
       // else place order
+      if (formData.type === "market") {
+        await placeMarketOrder(new BN(formData.price), formData.side);
+      }
 
-      await placeOrder(
-        new BN(formData.price),
-        new BN(formData.size),
-        formData.side
-      );
+      if (formData.type === "limit") {
+        await placeOrder(
+          new BN(formData.price),
+          new BN(formData.size),
+          formData.side
+        );
+      }
 
-      // Order 
-
+      // Order
     } catch (err: any) {
       const message = err?.message || "Failed to place order";
       toast.error(message);
@@ -82,13 +109,7 @@ const TradeForm = () => {
         size="lg"
         radius="none"
         // color="primary"
-        onSelectionChange={(key) =>{
 
-          setFormData((state) => ({
-            ...state,
-            side: key.toString() as "bid" | "ask",
-          }))
-        }}
         color={formData.side === "bid" ? "primary" : "danger"}
         selectedKey={formData.side}
         classNames={{
@@ -96,24 +117,50 @@ const TradeForm = () => {
           tab: "py-5",
         }}
       >
-        <Tab  key={"bid"} title="Buy" />
+        <Tab key={"bid"} title="Buy" />
         <Tab key={"ask"} title="Sell" />
       </Tabs>
       <div className="px-4 mt-4">
-        <label
-          htmlFor="price"
-          className="block mb-2  text-white/60 font-medium"
+        <Select
+          selectedKeys={[formData.type]}
+          onChange={(e) => {
+            setFormData((state) => ({
+              ...state,
+              type: e.target.value as "market" | "limit",
+            }));
+          }}
+          value={formData.type}
+          label="Order Type"
+          variant="faded"
+          classNames={{
+            label: "mb-2 !text-white/60 font-medium text-base",
+            trigger: "p-2 px-3 bg-gray-900/50 border-gray-600",
+            popoverContent: "bg-gray-900 border-gray-600",
+          }}
+          size="lg"
+          radius="sm"
+          labelPlacement="outside"
+          className="w-full"
         >
-          Limit Price
-        </label>
-        <div>
+          <SelectItem key={"market"}>Market</SelectItem>
+          <SelectItem key={"limit"}>Limit</SelectItem>
+        </Select>
+      </div>
+      {formData.type === "limit" && (
+        <div className="px-4 mt-4">
+          <label
+            htmlFor="price"
+            className="block mb-2 text-white/60 font-medium"
+          >
+            Limit Price
+          </label>
           <NumericFormat
             value={formData.price}
             displayType="input"
             min={0}
             name="price"
             placeholder="Enter limit price"
-            className="w-full rounded-lg text-xl placeholder:text-base p-2 px-3 outline-none border border-gray-600 bg-gray-900/50 hover:border-primary-500 focus-within:border-primary-500 placeholder-white/20"
+            className="w-full rounded-lg text-xl placeholder:text-base p-2 px-3 outline-none border-2 border-gray-600 bg-gray-900/50 hover:border-primary-500 focus-within:border-primary-500 placeholder-white/20 "
             required
             onValueChange={(values) => {
               const { value } = values;
@@ -123,7 +170,7 @@ const TradeForm = () => {
             allowNegative={false}
           />
         </div>
-      </div>
+      )}
       <div className="px-4 mt-4">
         <label
           htmlFor="quantity"
@@ -138,7 +185,7 @@ const TradeForm = () => {
             min={0}
             name="quantity"
             placeholder="Enter quantity/size"
-            className="w-full rounded-lg text-xl placeholder:text-base p-2 px-3 outline-none border border-gray-600 bg-gray-900/50 hover:border-primary-500 focus-within:border-primary-500 placeholder-white/20"
+            className="w-full rounded-lg text-xl placeholder:text-base p-2 px-3 outline-none border-2 border-gray-600 bg-gray-900/50 hover:border-primary-500 focus-within:border-primary-500 placeholder-white/20"
             required
             onValueChange={(values) => {
               const { value } = values;
@@ -149,13 +196,29 @@ const TradeForm = () => {
           />
         </div>
       </div>
+
+      {formData.type === "market" && (
+        <div className="px-4 mt-2">
+          <Checkbox
+            color="primary"
+            size="lg"
+            isSelected={autoSettlement}
+            onValueChange={setAutoSettlement}
+            classNames={{
+              wrapper: "bg-gray-900/50",
+            }}
+          >
+            Auto settlement
+          </Checkbox>
+        </div>
+      )}
       <div className="grid grid-cols-2 text-sm gap-2 grid-rows-2 bg-gray-900/50 rounded-lg p-4 mt-auto mx-4 ">
         <div className="text-white/60">Total Cost </div>
         <div className="text-right">
           {" "}
           ~{" "}
           {formData?.price || formData?.size
-            ? (Number(formData.price) * Number(formData.size))
+            ? Number(formData.price) * Number(formData.size)
             : "-"}
         </div>
         <div className="text-white/60">Fee </div>
@@ -168,11 +231,13 @@ const TradeForm = () => {
         radius="sm"
         size="lg"
         className="m-4"
-
       >
         Place Order
       </Button>
-      <CreateAccountModal isOpen={isCreateAccountModalOpen} closeModal={closeCreateAccountModal}/>
+      <CreateAccountModal
+        isOpen={isCreateAccountModalOpen}
+        closeModal={closeCreateAccountModal}
+      />
     </form>
   );
 };
