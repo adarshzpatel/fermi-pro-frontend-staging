@@ -64,7 +64,7 @@ type FermiStore = {
     fetchEventHeap: () => Promise<void>;
     fetchOrderbook: () => Promise<void>;
     placeOrder: (price: BN, size: BN, side: "bid" | "ask") => Promise<void>;
-    placeMarketOrder: (price: BN, side: "bid" | "ask") => Promise<void>;
+    placeMarketOrder: (quantity: BN, side: "bid" | "ask") => Promise<void>;
     cancelOrderById: (id: string) => Promise<void>;
     finalise: (
       maker: PublicKey,
@@ -236,7 +236,7 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.fetchOrderbook();
         },
-        placeMarketOrder: async (price: BN, side: "bid" | "ask") => {
+        placeMarketOrder: async (quantity: BN, side: "bid" | "ask") => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
           const oo = get().openOrders;
@@ -251,11 +251,11 @@ export const useFermiStore = create<FermiStore>()(
           // build order args
           const orderArgs = {
             side: side === "bid" ? Side.Bid : Side.Ask,
-            priceLots: price,
-            maxBaseLots: new BN(0),
-            maxQuoteLotsIncludingFees: new BN(0),
+            priceLots: new BN(1),
+            maxBaseLots: new BN(quantity),
+            maxQuoteLotsIncludingFees: new BN(quantity),
             clientOrderId,
-            orderType: { immediateOrCancel: {} }, // market order
+            orderType: { market: {} }, // market order
             expiryTimestamp: new BN(Math.floor(Date.now() / 1000) + 3600), // 1 hour from now
             selfTradeBehavior: { decrementTake: {} }, // Options might include 'decrementTake', 'cancelProvide', 'abortTransaction', etc.
             limit: 5,

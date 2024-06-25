@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import LastTradedPrice from "./LastTradedPrice";
-import Bids from "./Bids";
+import React, { useEffect, useState } from "react";
+
 import Asks from "./Asks";
-import { useFermiStore } from "@/stores/fermiStore";
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import Bids from "./Bids";
+import LastTradedPrice from "./LastTradedPrice";
 import WebSocketStatus from "./WebsocketStatus";
 import { toast } from "sonner";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import { useFermiStore } from "@/stores/fermiStore";
 
 const wsUrl = "wss://api.fermilabs.xyz";
 
@@ -28,7 +29,6 @@ const Orderbook = (props: Props) => {
 
       websocket.onopen = () => {
         setIsWsConnected(true);
-        toast.success("Orderbook connected.");
         // Subscribe to the selected market
         websocket.send(
           JSON.stringify({
@@ -51,7 +51,6 @@ const Orderbook = (props: Props) => {
       websocket.onclose = () => {
         setIsWsConnected(false);
         // Try to reconnect after a delay
-        toast.error("WebSocket connection closed. Reconnecting...");
         setTimeout(connectWebSocket, 100);
       };
 

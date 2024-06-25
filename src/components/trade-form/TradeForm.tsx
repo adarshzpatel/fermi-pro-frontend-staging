@@ -11,11 +11,10 @@ import React, { FormEvent, useState } from "react";
 
 import { BN } from "@coral-xyz/anchor";
 import CreateAccountModal from "../shared/CreateAccountModal";
-import MarketList from "./MarketList";
 import { NumericFormat } from "react-number-format";
-import { set } from "lodash";
 import { toast } from "sonner";
 import { useFermiStore } from "@/stores/fermiStore";
+import useTokenBalances from "@/hooks/useTokenBalances";
 
 type FormDataType = {
   size: string;
@@ -25,8 +24,8 @@ type FormDataType = {
 };
 
 const DEFAULT_FORM_STATE: FormDataType = {
-  size: "",
-  price: "",
+  size: "0",
+  price: "0",
   side: "bid",
   type: "limit",
 };
@@ -46,7 +45,8 @@ const TradeForm = () => {
     s.actions.placeMarketOrder,
   ]);
   const oo = useFermiStore((s) => s.openOrders);
-
+  const { baseTokenBalance, quoteTokenBalance } = useTokenBalances();
+  const selectedMarket = useFermiStore((s) => s.selectedMarket);
   const {
     isOpen: isCreateAccountModalOpen,
     onOpen: openCreateAccountModal,
@@ -59,12 +59,7 @@ const TradeForm = () => {
     setProcessing(true);
     try {
       // input validation
-      if (
-        formData.size === DEFAULT_FORM_STATE.size ||
-        formData.price == DEFAULT_FORM_STATE.price
-      ) {
-        throw new Error("Size and price are required");
-      }
+
       // check if open orders account exist
       // if not, open create open orders account modal
       if (!oo) {
@@ -75,7 +70,7 @@ const TradeForm = () => {
 
       // else place order
       if (formData.type === "market") {
-        await placeMarketOrder(new BN(formData.price), formData.side);
+        await placeMarketOrder(new BN(formData.size), formData.side);
       }
 
       if (formData.type === "limit") {
@@ -95,6 +90,7 @@ const TradeForm = () => {
       setFormData((s) => ({
         ...DEFAULT_FORM_STATE,
         side: s.side as "bid" | "ask",
+        type: s.type as "market" | "limit",
       }));
       setProcessing(false);
     }
@@ -108,10 +104,14 @@ const TradeForm = () => {
         variant="solid"
         size="lg"
         radius="none"
-        // color="primary"
-
         color={formData.side === "bid" ? "primary" : "danger"}
         selectedKey={formData.side}
+        onSelectionChange={(key) => {
+          setFormData((state) => ({
+            ...state,
+            side: key as "bid" | "ask",
+          }));
+        }}
         classNames={{
           tabList: "bg-gray-900 p-0 border-b border-gray-700 ",
           tab: "py-5",
@@ -150,9 +150,12 @@ const TradeForm = () => {
         <div className="px-4 mt-4">
           <label
             htmlFor="price"
-            className="block mb-2 text-white/60 font-medium"
+            className="flex items-center justify-between mb-2 text-white/60 font-medium"
           >
             Limit Price
+            <span className="text-xs text-white/30 block">
+              {baseTokenBalance} {selectedMarket?.quoteTokenName}
+            </span>
           </label>
           <NumericFormat
             value={formData.price}
@@ -174,9 +177,12 @@ const TradeForm = () => {
       <div className="px-4 mt-4">
         <label
           htmlFor="quantity"
-          className="block mb-2  text-white/60 font-medium"
+          className="flex items-center justify-between mb-2  text-white/60 font-medium"
         >
           Quantity
+          <span className="text-xs text-white/30 block">
+            {baseTokenBalance} {selectedMarket?.baseTokenName}
+          </span>
         </label>
         <div className="mb-4">
           <NumericFormat
