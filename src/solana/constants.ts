@@ -14,16 +14,16 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: "JUP",
     quoteTokenName: "USDC",
-    marketPda: "9NUJ5TBsYJ6PeRmKTGW72m5RK7vMRGXhxjXPXW9mxYzN",
+    marketPda: "C6YLjpnvz4aUQUzqdqdiZg1nBDPG6XGVxy6FWmWSiFAD",
   },
   {
     baseTokenName: "CWIF",
     quoteTokenName: "USDC",
-    marketPda: "Akx6Rkbui8kGZW4N5T6nqiHYLmzP8WyyUBqub1VyGCd1",
+    marketPda: "DgH5EyJK8EUFeYwfKnLU5JVrFbRZUJBiVh3Re5QRTN3p",
   },
   {
     baseTokenName: "KMNO",
     quoteTokenName: "USDC",
-    marketPda: "4q746cL6YKhQ2nPvCAEqwJzrrMZcNRfKMsAM3DZeWB1J",
+    marketPda: "2UgASzUhxCpEMqX91MqaYQp1GzSoqDUPLAV3QMb3UKgb",
   },
 ];
