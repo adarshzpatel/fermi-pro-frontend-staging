@@ -1,8 +1,8 @@
 export const RPC_URL = {
-  devnet:
-    "https://devnet.helius-rpc.com/?api-key=5163c3d1-8082-442e-8a15-c27bff3cfabb",
+  devnet: "https://api.devnet.solana.com",
 };
-export const FERMI_DEVNET_PROGRAM_ID = "33ZENzbUfMGwZZYQDCj8DEeBKBqd8LaCKnMfQQnMVGFW";
+export const FERMI_DEVNET_PROGRAM_ID =
+  "33ZENzbUfMGwZZYQDCj8DEeBKBqd8LaCKnMfQQnMVGFW";
 
 export type MarketType = {
   baseTokenName: string;
