@@ -73,7 +73,16 @@ type FermiStore = {
       slotsToConsume: BN,
       price: any
     ) => Promise<void>;
-    finaliseDirect: () => Promise<void>;
+    finaliseDirect: (
+      maker: PublicKey,
+      taker: PublicKey,
+      slots: BN
+    ) => Promise<void>;
+    finaliseMarketOrder: (
+      maker: PublicKey,
+      taker: PublicKey,
+      slots: BN
+    ) => Promise<void>;
     cancelWithPenalty: (
       maker: PublicKey,
       taker: PublicKey,
@@ -147,6 +156,8 @@ export const useFermiStore = create<FermiStore>()(
           );
           const parsedEventHeap = parseEventHeap(client, eventHeapAcc);
 
+          // console.log("parsedEventHeap", parsedEventHeap);
+          
           get().set((s) => {
             s.eventHeap = parsedEventHeap;
           });
@@ -262,7 +273,7 @@ export const useFermiStore = create<FermiStore>()(
           };
 
           // Get the user's token accounts
-
+          console.log('ORDER ARGS',orderArgs)
           const userBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -418,7 +429,179 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
         },
-        finaliseDirect: async () => {},
+        finaliseDirect: async (
+          maker: PublicKey,
+          taker: PublicKey,
+          slots: BN
+        ) => {
+          const client = get().client;
+          if (!client) throw new Error("Client not found");
+          const market = get().selectedMarket?.current;
+          const marketPda = get().selectedMarket?.publicKey;
+          if (!market || !marketPda) throw new Error("No market found!");
+
+          const makerQuoteTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              maker
+            )
+          );
+          const takerQuoteTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              taker
+            )
+          );
+          const takerBaseTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              taker
+            )
+          );
+          const makerBaseTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              maker
+            )
+          );
+          const makerOpenOrders = (
+            await client.findOpenOrdersForMarket(
+              maker,
+              new PublicKey(marketPda)
+            )
+          )[0];
+          const takerOpenOrders = (
+            await client.findOpenOrdersForMarket(
+              taker,
+              new PublicKey(marketPda)
+            )
+          )[0];
+
+          const args = {
+            market: new PublicKey(marketPda),
+            marketAuthority: market.marketAuthority,
+            eventHeap: market.eventHeap,
+            marketVaultQuote: market.marketQuoteVault,
+            marketVaultBase: market.marketBaseVault,
+            takerBaseAccount: takerBaseTokenAccount,
+            takerQuoteAccount: takerQuoteTokenAccount,
+            makerBaseAccount: makerBaseTokenAccount,
+            makerQuoteAccount: makerQuoteTokenAccount,
+            maker: makerOpenOrders,
+            taker: takerOpenOrders,
+            slots: slots,
+            limit: new BN(0),
+          };
+
+          const ixs = await client.atomicFinalizeEventsDirect(
+            args.market,
+            args.marketAuthority,
+            args.eventHeap,
+            args.takerBaseAccount,
+            args.takerQuoteAccount,
+            args.makerBaseAccount,
+            args.makerQuoteAccount,
+            args.marketVaultQuote,
+            args.marketVaultBase,
+            args.maker,
+            args.taker,
+            args.slots,
+            args.limit
+          );
+
+          await client.sendAndConfirmTransaction(ixs, {});
+          console.log("Finalised successfully");
+        },
+        finaliseMarketOrder: async (
+          maker: PublicKey,
+          taker: PublicKey,
+          slots: BN
+        ) => {
+          const client = get().client;
+          if (!client) throw new Error("Client not found");
+          const market = get().selectedMarket?.current;
+          const marketPda = get().selectedMarket?.publicKey;
+          if (!market || !marketPda) throw new Error("No market found!");
+
+          const makerQuoteTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              maker
+            )
+          );
+          const takerQuoteTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              taker
+            )
+          );
+          const takerBaseTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              taker
+            )
+          );
+          const makerBaseTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              maker
+            )
+          );
+          const makerOpenOrders = (
+            await client.findOpenOrdersForMarket(
+              maker,
+              new PublicKey(marketPda)
+            )
+          )[0];
+          const takerOpenOrders = (
+            await client.findOpenOrdersForMarket(
+              taker,
+              new PublicKey(marketPda)
+            )
+          )[0];
+
+          const args = {
+            market: new PublicKey(marketPda),
+            marketAuthority: market.marketAuthority,
+            eventHeap: market.eventHeap,
+            marketVaultQuote: market.marketQuoteVault,
+            marketVaultBase: market.marketBaseVault,
+            takerBaseAccount: takerBaseTokenAccount,
+            takerQuoteAccount: takerQuoteTokenAccount,
+            makerBaseAccount: makerBaseTokenAccount,
+            makerQuoteAccount: makerQuoteTokenAccount,
+            maker: makerOpenOrders,
+            taker: makerOpenOrders,
+            slots: slots,
+            limit: new BN(2),
+          };
+
+          const ixs = await client.atomicFinalizeEventsMarket(
+            args.market,
+            args.marketAuthority,
+            args.eventHeap,
+            args.takerBaseAccount,
+            args.takerQuoteAccount,
+            args.makerBaseAccount,
+            args.makerQuoteAccount,
+            args.marketVaultQuote,
+            args.marketVaultBase,
+            args.maker,
+            args.taker,
+            new BN(2),
+            args.limit
+          );
+          await client.sendAndConfirmTransaction(ixs, {});
+          console.log("Finalised marketsuccessfully");
+        },
         finalise: async (maker, taker, takerSide, slotsToConsume, price) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");

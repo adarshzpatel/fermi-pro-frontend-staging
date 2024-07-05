@@ -1,16 +1,18 @@
+import * as anchor from "@coral-xyz/anchor";
+import * as spl from "@solana/spl-token";
+
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import {
   Connection,
   PublicKey,
   SystemProgram,
   TransactionInstruction,
 } from "@solana/web3.js";
+
 import { BN } from "@coral-xyz/anchor";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
-import * as anchor from "@coral-xyz/anchor";
-import * as spl from "@solana/spl-token";
 import { TbWashDryP } from "react-icons/tb";
 
 export const Side = {
@@ -150,20 +152,20 @@ export const checkOrCreateAssociatedTokenAccount = async (
   owner: anchor.web3.PublicKey
 ): Promise<string> => {
   // Find the ATA for the given mint and owner
-  
-  try{
+
+  try {
     const ata = await spl.getAssociatedTokenAddress(mint, owner, true);
     // Check if the ATA already exists
     const accountInfo = await provider.connection.getAccountInfo(ata);
-    
+
     if (accountInfo == null) {
       // ATA does not exist, create it
       await createAssociatedTokenAccount(provider, mint, ata, owner);
     }
     return ata.toBase58();
-  } catch(err){
-    console.error('Error in checkOrCreateAta',err)
-    throw err
+  } catch (err) {
+    console.error("Error in checkOrCreateAta", err);
+    throw err;
   }
 };
 
@@ -192,18 +194,17 @@ export const createAssociatedTokenAccount = async (
   ata: anchor.web3.PublicKey,
   owner: anchor.web3.PublicKey
 ): Promise<void> => {
+  const tx = new anchor.web3.Transaction();
+  tx.add(
+    spl.createAssociatedTokenAccountInstruction(
+      provider.wallet.publicKey,
+      ata,
+      owner,
+      mint
+    )
+  );
 
-    const tx = new anchor.web3.Transaction();
-    tx.add(
-      spl.createAssociatedTokenAccountInstruction(
-        provider.wallet.publicKey,
-        ata,
-        owner,
-        mint
-        )
-        );
-
-       await provider.sendAndConfirm(tx, []);
+  await provider.sendAndConfirm(tx, []);
 };
 
 export const mintTo = async (
@@ -234,7 +235,6 @@ export const fetchTokenBalance = async (
 
     return account?.amount.toString();
   } catch (error) {
-    console.error("Error in fetchTokenBalance:", error);
-    throw error;
   }
+  return 0;
 };

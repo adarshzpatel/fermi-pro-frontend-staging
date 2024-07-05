@@ -1,4 +1,10 @@
-import { BookSideAccount, EventHeapAccount, FermiClient, FillEvent, OutEvent } from "./fermiClient";
+import {
+  BookSideAccount,
+  EventHeapAccount,
+  FermiClient,
+  FillEvent,
+  OutEvent,
+} from "./fermiClient";
 
 import { BN } from "@coral-xyz/anchor";
 
@@ -23,13 +29,31 @@ export const parseEventHeap = (
   eventHeap: EventHeapAccount | null
 ) => {
   if (eventHeap == null) throw new Error("Event Heap not found");
+  let fillDirectEvents: any = [];
   let fillEvents: any = [];
   let outEvents: any = [];
   // let nodes: any = [];
   if (eventHeap !== null) {
+    // find nodes having eventType = 2
     (eventHeap.nodes as any).forEach((node: any, i: number) => {
-      // nodes.push(node.event);
-      if (node.event.eventType === 0) {
+      if (node.event.eventType === 2) {
+        const fillDirectEvent: any = client.program.coder.types.decode(
+          "FillEventDirect",
+          Buffer.from([0, ...node.event.padding])
+        );
+        if (fillDirectEvent.timestamp.toString() !== "0") {
+          fillDirectEvents.push({
+            ...fillDirectEvent,
+            index: i,
+            maker: fillDirectEvent.maker.toString(),
+            taker: fillDirectEvent.taker.toString(),
+            price: fillDirectEvent.price.toString(),
+            quantity: fillDirectEvent.quantity.toString(),
+            makerClientOrderId: fillDirectEvent.makerClientOrderId.toString(),
+            takerClientOrderId: fillDirectEvent.takerClientOrderId.toString(),
+          });
+        }
+      } else if (node.event.eventType === 0) {
         const fillEvent: FillEvent = client.program.coder.types.decode(
           "FillEvent",
           Buffer.from([0, ...node.event.padding])
@@ -46,15 +70,20 @@ export const parseEventHeap = (
             takerClientOrderId: fillEvent.takerClientOrderId.toString(),
           });
         }
-      } else {
+      } else if (node.event.eventType === 1) {
         const outEvent: OutEvent = client.program.coder.types.decode(
           "OutEvent",
           Buffer.from([0, ...node.event.padding])
         );
+
         if (outEvent.timestamp.toString() !== "0")
           outEvents.push({ ...outEvent, index: i });
       }
     });
   }
+  console.log("fillEvents", fillEvents);
+  console.log("outEvents", outEvents);
+    console.log("fillDirectEvents", fillDirectEvents);
+
   return fillEvents;
 };

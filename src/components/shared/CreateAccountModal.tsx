@@ -1,20 +1,21 @@
-import { useFermiStore } from "@/stores/fermiStore";
-import supabase from "@/supabase";
-import { BN } from "@coral-xyz/anchor";
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
   Button,
   Input,
   Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
 } from "@nextui-org/react";
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
 import React, { useState } from "react";
+
+import { BN } from "@coral-xyz/anchor";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
+import { PublicKey } from "@solana/web3.js";
+import supabase from "@/supabase";
 import { toast } from "sonner";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import { useFermiStore } from "@/stores/fermiStore";
 
 type Props = {
   isOpen: boolean;
@@ -88,7 +89,7 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
   return (
     <Modal
       isOpen={isOpen}
-      className="border-gray-600 border"
+      className="border-gray-600 bg-gray-900 border"
       onClose={closeModal}
       backdrop="blur"
     >
@@ -138,6 +139,11 @@ const CreateAccountModal = ({ isOpen, closeModal }: Props) => {
                   radius="sm"
                   placeholder="Enter account name"
                   onValueChange={(val) => setAccountName(val)}
+                  classNames={{
+                    label: "!text-gray-400 font-medium",
+                    inputWrapper:
+                      "bg-gray-800 data-[hover=true]:bg-gray-700/50 group-data-[focus=true]:bg-gray-700/50",
+                  }}
                 />
                 <Button
                   color="primary"

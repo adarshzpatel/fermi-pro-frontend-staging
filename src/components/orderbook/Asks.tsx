@@ -8,7 +8,7 @@ const Asks = ({ data }: Props) => {
     <div className="flex-grow flex flex-col-reverse text-red-400">
       {data?.map((it: any) => (
         <div
-          key={it.id}
+          key={it.key}
           className="flex items-center bg-red-800/20 px-3 py-1.5 justify-between"
         >
           <span>{it.price}</span>
