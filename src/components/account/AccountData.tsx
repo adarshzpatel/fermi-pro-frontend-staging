@@ -1,7 +1,8 @@
-import React from "react";
-import OpenOrders from "./OpenOrders";
-import SettleBalances from "./SettleBalances";
 import { Tab, Tabs } from "@nextui-org/react";
+
+import OpenOrders from "./OpenOrders";
+import React from "react";
+import SettleBalances from "./SettleBalances";
 
 const AccountData = () => {
   return (

@@ -70,7 +70,12 @@ const TradeForm = () => {
 
       // else place order
       if (formData.type === "market") {
-        await placeMarketOrder(new BN(formData.size), formData.side);
+        await placeMarketOrder(
+          new BN(formData.price),
+          new BN(formData.size),
+          formData.side,
+          autoSettlement
+        );
       }
 
       if (formData.type === "limit") {
@@ -129,6 +134,7 @@ const TradeForm = () => {
               type: e.target.value as "market" | "limit",
             }));
           }}
+          disallowEmptySelection
           value={formData.type}
           label="Order Type"
           variant="faded"
@@ -146,34 +152,34 @@ const TradeForm = () => {
           <SelectItem key={"limit"}>Limit</SelectItem>
         </Select>
       </div>
-      {formData.type === "limit" && (
-        <div className="px-4 mt-4">
-          <label
-            htmlFor="price"
-            className="flex items-center justify-between mb-2 text-white/60 font-medium"
-          >
-            Limit Price
-            <span className="text-xs text-white/30 block">
-              {baseTokenBalance} {selectedMarket?.quoteTokenName}
-            </span>
-          </label>
-          <NumericFormat
-            value={formData.price}
-            displayType="input"
-            min={0}
-            name="price"
-            placeholder="Enter limit price"
-            className="w-full rounded-lg text-xl placeholder:text-base p-2 px-3 outline-none border-2 border-gray-600 bg-gray-900/50 hover:border-primary-500 focus-within:border-primary-500 placeholder-white/20 "
-            required
-            onValueChange={(values) => {
-              const { value } = values;
-              setFormData((state) => ({ ...state, price: value }));
-            }}
-            thousandSeparator=","
-            allowNegative={false}
-          />
-        </div>
-      )}
+
+      <div className="px-4 mt-4">
+        <label
+          htmlFor="price"
+          className="flex items-center justify-between mb-2 text-white/60 font-medium"
+        >
+          Limit Price
+          <span className="text-xs text-white/30 block">
+            {quoteTokenBalance} {selectedMarket?.quoteTokenName}
+          </span>
+        </label>
+        <NumericFormat
+          value={formData.price}
+          displayType="input"
+          min={0}
+          name="price"
+          placeholder="Enter limit price"
+          className="w-full rounded-lg text-xl placeholder:text-base p-2 px-3 outline-none border-2 border-gray-600 bg-gray-900/50 hover:border-primary-500 focus-within:border-primary-500 placeholder-white/20 "
+          required
+          onValueChange={(values) => {
+            const { value } = values;
+            setFormData((state) => ({ ...state, price: value }));
+          }}
+          thousandSeparator=","
+          allowNegative={false}
+        />
+      </div>
+
       <div className="px-4 mt-4">
         <label
           htmlFor="quantity"
@@ -203,7 +209,7 @@ const TradeForm = () => {
         </div>
       </div>
 
-      {formData.type === "market" && (
+      {/* {formData.type === "market" && (
         <div className="px-4 mt-2">
           <Checkbox
             color="primary"
@@ -217,7 +223,7 @@ const TradeForm = () => {
             Auto settlement
           </Checkbox>
         </div>
-      )}
+      )} */}
       <div className="grid grid-cols-2 text-sm gap-2 grid-rows-2 bg-gray-900/50 rounded-lg p-4 mt-auto mx-4 ">
         <div className="text-white/60">Total Cost </div>
         <div className="text-right">

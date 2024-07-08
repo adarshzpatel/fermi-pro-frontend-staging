@@ -64,7 +64,12 @@ type FermiStore = {
     fetchEventHeap: () => Promise<void>;
     fetchOrderbook: () => Promise<void>;
     placeOrder: (price: BN, size: BN, side: "bid" | "ask") => Promise<void>;
-    placeMarketOrder: (quantity: BN, side: "bid" | "ask") => Promise<void>;
+    placeMarketOrder: (
+      price: BN,
+      quantity: BN,
+      side: "bid" | "ask",
+      autoSettlement: boolean
+    ) => Promise<void>;
     cancelOrderById: (id: string) => Promise<void>;
     finalise: (
       maker: PublicKey,
@@ -157,7 +162,7 @@ export const useFermiStore = create<FermiStore>()(
           const parsedEventHeap = parseEventHeap(client, eventHeapAcc);
 
           // console.log("parsedEventHeap", parsedEventHeap);
-          
+
           get().set((s) => {
             s.eventHeap = parsedEventHeap;
           });
@@ -193,7 +198,7 @@ export const useFermiStore = create<FermiStore>()(
               };
             });
           }
-
+          console.log("OPEN ORDERS", openOrdersAccPk.toString());
           set((s) => {
             s.openOrders = {
               publicKey: openOrdersAccPk,
@@ -247,13 +252,18 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOpenOrders();
           await get().actions.fetchOrderbook();
         },
-        placeMarketOrder: async (quantity: BN, side: "bid" | "ask") => {
+        placeMarketOrder: async (
+          price: BN,
+          quantity: BN,
+          side: "bid" | "ask",
+          autoSettlement: boolean
+        ) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
           const oo = get().openOrders;
           const selectedMarket = get().selectedMarket;
 
-          if (!oo?.account) throw new Error("Open orders not found");
+          if (!oo?.account) throw new Error("Open   orders not found");
           if (!selectedMarket?.current) throw new Error("Market Not Selected");
 
           // Generate client order id  - number of open orders + 1
@@ -262,18 +272,19 @@ export const useFermiStore = create<FermiStore>()(
           // build order args
           const orderArgs = {
             side: side === "bid" ? Side.Bid : Side.Ask,
-            priceLots: new BN(1),
-            maxBaseLots: new BN(quantity),
-            maxQuoteLotsIncludingFees: new BN(quantity),
+            priceLots: price,
+            maxBaseLots: quantity,
+            maxQuoteLotsIncludingFees: new BN(quantity).mul(new BN(price)),
             clientOrderId,
-            orderType: { market: {} }, // market order
+            orderType: { immediateOrCancel: {} }, // market order
             expiryTimestamp: new BN(Math.floor(Date.now() / 1000) + 3600), // 1 hour from now
             selfTradeBehavior: { decrementTake: {} }, // Options might include 'decrementTake', 'cancelProvide', 'abortTransaction', etc.
             limit: 5,
           };
 
           // Get the user's token accounts
-          console.log('ORDER ARGS',orderArgs)
+          console.log("ORDER ARGS", JSON.stringify(orderArgs, null, 2));
+
           const userBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -309,6 +320,25 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchOrderbook();
           await get().actions.fetchOpenOrders();
           await get().actions.fetchEventHeap();
+
+          if (autoSettlement) {
+            // If auto settlement is true, finalise the order
+            const eventHeap = get().eventHeap;
+
+            const matchedEvent = eventHeap?.fillDirectEvents?.find(
+              (e: any) => e.taker.toString() === client.walletPk.toString()
+            );
+
+            if (!matchedEvent) throw new Error("No matched event found");
+
+            await get().actions.finaliseMarketOrder(
+              new PublicKey(matchedEvent.maker),
+              new PublicKey(matchedEvent.taker),
+              new BN(matchedEvent.index)
+            );
+
+            console.log("Matched event found and finalised");
+          }
         },
         placeOrder: async (price: BN, size: BN, side: "bid" | "ask") => {
           const client = get().client;
@@ -322,6 +352,7 @@ export const useFermiStore = create<FermiStore>()(
           // generate client id  - number of open orders + 1
           const clientOrderId = new BN((oo?.orders?.length ?? 0) + 1);
           // build order args
+
           const orderArgs = {
             side: side === "bid" ? Side.Bid : Side.Ask,
             priceLots: price,
@@ -527,13 +558,19 @@ export const useFermiStore = create<FermiStore>()(
           const marketPda = get().selectedMarket?.publicKey;
           if (!market || !marketPda) throw new Error("No market found!");
 
-          const makerQuoteTokenAccount = new PublicKey(
-            await checkOrCreateAssociatedTokenAccount(
-              client.provider,
-              market.quoteMint,
-              maker
+          const makerOpenOrdersAccount =
+            await client.deserializeOpenOrderAccount(maker);
+
+          if (!makerOpenOrdersAccount)
+            throw new Error("Maker open orders not found");
+
+          const takerOpenOrders = (
+            await client.findOpenOrdersForMarket(
+              taker,
+              new PublicKey(marketPda)
             )
-          );
+          )[0];
+
           const takerQuoteTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -541,6 +578,7 @@ export const useFermiStore = create<FermiStore>()(
               taker
             )
           );
+
           const takerBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -548,25 +586,21 @@ export const useFermiStore = create<FermiStore>()(
               taker
             )
           );
+          const makerQuoteTokenAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              makerOpenOrdersAccount?.owner
+            )
+          );
+
           const makerBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.baseMint,
-              maker
+              makerOpenOrdersAccount?.owner
             )
           );
-          const makerOpenOrders = (
-            await client.findOpenOrdersForMarket(
-              maker,
-              new PublicKey(marketPda)
-            )
-          )[0];
-          const takerOpenOrders = (
-            await client.findOpenOrdersForMarket(
-              taker,
-              new PublicKey(marketPda)
-            )
-          )[0];
 
           const args = {
             market: new PublicKey(marketPda),
@@ -578,11 +612,13 @@ export const useFermiStore = create<FermiStore>()(
             takerQuoteAccount: takerQuoteTokenAccount,
             makerBaseAccount: makerBaseTokenAccount,
             makerQuoteAccount: makerQuoteTokenAccount,
-            maker: makerOpenOrders,
-            taker: makerOpenOrders,
+            maker: maker,
+            taker: takerOpenOrders,
             slots: slots,
             limit: new BN(2),
           };
+
+          console.log("FINALISE MARKET ARGS : ", args);
 
           const ixs = await client.atomicFinalizeEventsMarket(
             args.market,
@@ -596,7 +632,7 @@ export const useFermiStore = create<FermiStore>()(
             args.marketVaultBase,
             args.maker,
             args.taker,
-            new BN(2),
+            args.slots,
             args.limit
           );
           await client.sendAndConfirmTransaction(ixs, {});

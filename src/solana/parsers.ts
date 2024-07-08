@@ -83,7 +83,7 @@ export const parseEventHeap = (
   }
   console.log("fillEvents", fillEvents);
   console.log("outEvents", outEvents);
-    console.log("fillDirectEvents", fillDirectEvents);
+  console.log("fillDirectEvents", fillDirectEvents);
 
-  return fillEvents;
+  return { fillEvents, outEvents, fillDirectEvents };
 };

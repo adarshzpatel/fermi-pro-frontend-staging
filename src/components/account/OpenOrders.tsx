@@ -1,7 +1,8 @@
-import { useFermiStore } from "@/stores/fermiStore";
 import React, { useMemo } from "react";
+
 import AccountNotFound from "./AccountNotFound";
 import OpenOrdersRow from "./OpenOrdersRow";
+import { useFermiStore } from "@/stores/fermiStore";
 
 const OpenOrders = () => {
   const openOrders = useFermiStore((s) => s.openOrders);
@@ -12,7 +13,7 @@ const OpenOrders = () => {
     if (eventHeap != undefined && openOrders != undefined) {
       // check if the order is in the event heap
       openOrders?.orders?.forEach((order) => {
-        const match = eventHeap?.find(
+        const match = eventHeap.fillEvents?.find(
           (event: any) =>
             event.makerClientOrderId.toString() === order.clientOrderId ||
             event.takerClientOrderId.toString() === order.clientOrderId
@@ -22,7 +23,6 @@ const OpenOrders = () => {
     }
 
     return map;
-
   }, [openOrders, eventHeap]);
 
   return (
@@ -53,16 +53,16 @@ const OpenOrders = () => {
           </tr>
         )}
         {openOrders?.orders?.map((it: any) => {
-        
           return (
-          <OpenOrdersRow
-            key={`order-${it.id}`}
-            id={it.clientOrderId}
-            side={it.side}
-            finaliseEvent={canFinalise[it.id]}
-            lockedPrice={it.lockedPrice}
-          />
-        )})}
+            <OpenOrdersRow
+              key={`order-${it.id}`}
+              id={it.clientOrderId}
+              side={it.side}
+              finaliseEvent={canFinalise[it.id]}
+              lockedPrice={it.lockedPrice}
+            />
+          );
+        })}
       </tbody>
     </table>
   );

@@ -15,7 +15,7 @@ const Orderbook = (props: Props) => {
   const fetchOrderbook = useFermiStore((s) => s.actions.fetchOrderbook);
 
   useEffect(() => {
-    console.log("[ORDERBOOK CHANGED]", orderbook);
+    // console.log("[ORDERBOOK CHANGED]", orderbook);
   }, [orderbook]);
 
   useEffect(() => {

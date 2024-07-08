@@ -152,21 +152,22 @@ export const checkOrCreateAssociatedTokenAccount = async (
   owner: anchor.web3.PublicKey
 ): Promise<string> => {
   // Find the ATA for the given mint and owner
+  const ata = await spl.getAssociatedTokenAddress(mint, owner, true);
 
-  try {
-    const ata = await spl.getAssociatedTokenAddress(mint, owner, true);
-    // Check if the ATA already exists
-    const accountInfo = await provider.connection.getAccountInfo(ata);
+  // Check if the ATA already exists
+  const accountInfo = await provider.connection.getAccountInfo(ata);
 
-    if (accountInfo == null) {
-      // ATA does not exist, create it
-      await createAssociatedTokenAccount(provider, mint, ata, owner);
-    }
-    return ata.toBase58();
-  } catch (err) {
-    console.error("Error in checkOrCreateAta", err);
-    throw err;
+  if (accountInfo == null) {
+    // ATA does not exist, create it
+    console.log("Creating Associated Token Account for user...");
+    await createAssociatedTokenAccount(provider, mint, ata, owner);
+    console.log("Associated Token Account created successfully.");
+  } else {
+    // ATA already exists
+    console.log("Associated Token Account already exists.");
   }
+
+  return ata.toBase58();
 };
 
 export async function checkMintOfATA(
@@ -226,15 +227,14 @@ export const fetchTokenBalance = async (
   connection: Connection
 ) => {
   try {
+
     const associatedTokenAddress = await spl.getAssociatedTokenAddress(
       mintPubKey,
       userPubKey,
       false
     );
     const account = await spl.getAccount(connection, associatedTokenAddress);
-
     return account?.amount.toString();
-  } catch (error) {
-  }
+  } catch (error) {}
   return 0;
 };
