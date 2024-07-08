@@ -14,6 +14,6 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: "JUP",
     quoteTokenName: "USDC",
-    marketPda: "BC19FUd1RmR2bJzd6iQdkvdXzVjGjf49Hnqwv9T2bX6L",
+    marketPda: "H5eyzqJtknfrZxFewk4GCtietQwoYvuqo3A7wfXzAzHF",
   },
 ];
