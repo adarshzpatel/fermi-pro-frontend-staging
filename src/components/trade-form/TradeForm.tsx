@@ -158,7 +158,7 @@ const TradeForm = () => {
           htmlFor="price"
           className="flex items-center justify-between mb-2 text-white/60 font-medium"
         >
-          Limit Price
+          {formData.type === "limit" ? "Limit Price" : "Market Price"}
           <span className="text-xs text-white/30 block">
             {quoteTokenBalance} {selectedMarket?.quoteTokenName}
           </span>

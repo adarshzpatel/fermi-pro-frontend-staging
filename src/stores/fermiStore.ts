@@ -337,6 +337,18 @@ export const useFermiStore = create<FermiStore>()(
               new BN(matchedEvent.index)
             );
 
+            const { data, error } = await supabase
+              .from("price_feed")
+              .insert([
+                {
+                  price: Number(price.toString()),
+                  market: selectedMarket.publicKey.toString(),
+                },
+              ])
+              .select();
+
+            if (error) console.log("error adding to price feed ", error);
+
             console.log("Matched event found and finalised");
           }
         },
@@ -636,6 +648,7 @@ export const useFermiStore = create<FermiStore>()(
             args.limit
           );
           await client.sendAndConfirmTransaction(ixs, {});
+
           console.log("Finalised marketsuccessfully");
         },
         finalise: async (maker, taker, takerSide, slotsToConsume, price) => {
