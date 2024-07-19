@@ -15,8 +15,8 @@ const AccountData = () => {
       classNames={{
         cursor: "bg-gray-700  ",
         tabList: "bg-gray-900/50 p-0 border-b border-gray-600 ",
-        tab: "py-5",
-        panel: "p-0 overflow-y-scroll",
+        tab: "py-5 ",
+        panel: "p-0 overflow-auto",
       }}
     >
       <Tab value={"open-orders"} title="Open Orders">

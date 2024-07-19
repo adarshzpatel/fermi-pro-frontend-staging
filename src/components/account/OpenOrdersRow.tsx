@@ -1,10 +1,11 @@
-import { FillEvent } from "@/solana/fermiClient";
-import { useFermiStore } from "@/stores/fermiStore";
-import supabase from "@/supabase";
-import { BN } from "@coral-xyz/anchor";
 import { Button, ButtonGroup } from "@nextui-org/react";
 import React, { useState } from "react";
+
+import { BN } from "@coral-xyz/anchor";
+import { FillEvent } from "@/solana/fermiClient";
+import supabase from "@/supabase";
 import { toast } from "sonner";
+import { useFermiStore } from "@/stores/fermiStore";
 
 type Props = {
   lockedPrice: string;
@@ -35,19 +36,34 @@ const SideCell = ({ side }: { side: string }) => {
   );
 };
 const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
-  const [cancel, finalise, cancelWithPenalty] = useFermiStore(
+  const [cancel, finalise, cancelWithPenalty, finaliseDirect] = useFermiStore(
     (s) => [
       s.actions.cancelOrderById,
       s.actions.finalise,
       s.actions.cancelWithPenalty,
-      s.selectedMarket,
+      s.actions.finaliseDirect,
     ]
   );
   const oo = useFermiStore((s) => s.openOrders?.publicKey);
   const [isFinalising, setIsFinalising] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
-
+  const handleFinaliseDirect = async () => {
+    try {
+      if (!finaliseEvent) return;
+      await finaliseDirect(
+        finaliseEvent.maker,
+        finaliseEvent.taker,
+        new BN(Number(finaliseEvent.index)),
+        finaliseEvent.price.toString()
+      );
+    } catch (err) {
+      console.log("Error finalising direct", err);
+      toast.error("Failed to finalise.");
+    } finally {
+      setIsFinalising(false);
+    }
+  };
   const handleFinalise = async () => {
     try {
       if (!finaliseEvent) return;
@@ -101,7 +117,7 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
   }
 
   return (
-    <tr className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out">
+    <tr className="text-center border-t border-gray-700 hover:bg-gray-700/25 duration-200 ease-out w-full">
       <td className="py-3 pl-4 text-left w-4">{id}</td>
       <td>
         <SideCell side={side} />
@@ -110,14 +126,24 @@ const OpenOrdersRow = ({ id, side, lockedPrice, finaliseEvent }: Props) => {
       <td className="flex items-center justify-end pr-4 py-3">
         <ButtonGroup variant="bordered" size="sm" className="ml-auto">
           {finaliseEvent && (
-            <Button
-              isLoading={isFinalising}
-              isDisabled={isCancelling}
-              onClick={handleFinalise}
-              className="bg-gray-900/50 border-gray-500 border hover:brightness-125 text-white/60"
-            >
-              Finalise
-            </Button>
+            <>
+              <Button
+                isLoading={isFinalising}
+                isDisabled={isCancelling}
+                onClick={handleFinalise}
+                className="bg-gray-900/50 border-gray-500 border hover:brightness-125 text-white/60"
+              >
+                Finalise
+              </Button>
+              <Button
+                isLoading={isFinalising}
+                isDisabled={isCancelling}
+                onClick={handleFinaliseDirect}
+                className="bg-gray-900/50 border-gray-500 border hover:brightness-125 text-white/60"
+              >
+                Finalise Direct
+              </Button>
+            </>
           )}
           <Button
             isLoading={isCancelling}

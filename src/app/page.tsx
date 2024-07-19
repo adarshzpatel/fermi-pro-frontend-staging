@@ -1,27 +1,28 @@
 "use client";
+
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/shared/ResizablePanels";
-
-import TradeForm from "@/components/trade-form/TradeForm";
-import Orderbook from "@/components/orderbook/Orderbook";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useLayoutEffect, useState } from "react";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-import { useFermiStore } from "@/stores/fermiStore";
+import { useEffect, useLayoutEffect, useState } from "react";
+
 import AccountData from "@/components/account/AccountData";
-import Navigation from "@/components/layout/Navigation";
-import MarketSelector from "@/components/trade-form/MarketSelector";
-import MarketList from "@/components/trade-form/MarketList";
 import { MARKETS } from "@/solana/constants";
+import MarketList from "@/components/trade-form/MarketList";
+import MarketSelector from "@/components/trade-form/MarketSelector";
+import Navigation from "@/components/layout/Navigation";
+import Orderbook from "@/components/orderbook/Orderbook";
 import { PublicKey } from "@solana/web3.js";
-import { toast } from "sonner";
 import { Spinner } from "@nextui-org/react";
 import TradeChart from "@/components/chart/TradeChart";
+import TradeForm from "@/components/trade-form/TradeForm";
 import TutorialPopover from "@/components/TutorialPopover";
+import { toast } from "sonner";
+import { useFermiStore } from "@/stores/fermiStore";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -156,13 +157,12 @@ export default function Home() {
                     defaultSize={50}
                     className="bg-gray-800 rounded-xl border border-gray-500 text-white/50 grid place-items-center text-xl "
                   >
-                    {/* 🚧 Work in Progress 🚧 */}
                     <TradeChart />
                   </ResizablePanel>
                   <ResizableHandle />
                   <ResizablePanel
                     defaultSize={50}
-                    className="bg-gray-800 rounded-xl flex flex-col border border-gray-600"
+                    className="bg-gray-800 rounded-xl flex flex-col border border-gray-600 "
                   >
                     <AccountData />
                   </ResizablePanel>

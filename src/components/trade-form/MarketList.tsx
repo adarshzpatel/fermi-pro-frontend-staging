@@ -1,8 +1,10 @@
 "use client"
-import { MarketType } from "@/solana/constants";
-import { shortenAddress } from "@/solana/utils/helpers";
+
 import { usePathname, useRouter } from "next/navigation";
+
+import { MarketType } from "@/solana/constants";
 import React from "react";
+import { shortenAddress } from "@/solana/utils/helpers";
 
 const MarketList = ({
   markets,
@@ -15,7 +17,7 @@ const MarketList = ({
   const pathname = usePathname();
 
   return (
-    <div className="rounded-b-xl relative shadow-2xl divide-y divide-gray-700 flex-1 overflow-y-scroll ">
+    <div className="rounded-b-xl relative shadow-2xl divide-y divide-gray-700 flex-1 overflow-auto ">
       {markets.map((it) => (
         <div
           onClick={()=> router.replace(pathname+`?market=${it.marketPda}`)}
@@ -30,7 +32,7 @@ const MarketList = ({
           </div>
         </div>
       ))}
-       <div className="text-center text-xs text-white/40 p-4">  --- </div>  
+       <div className="text-center text-xs text-white/40 p-4">  - END - </div>
     </div>
   );
 };

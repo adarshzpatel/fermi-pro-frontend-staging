@@ -81,7 +81,8 @@ type FermiStore = {
     finaliseDirect: (
       maker: PublicKey,
       taker: PublicKey,
-      slots: BN
+      slots: BN,
+      price: number
     ) => Promise<void>;
     finaliseMarketOrder: (
       maker: PublicKey,
@@ -475,7 +476,8 @@ export const useFermiStore = create<FermiStore>()(
         finaliseDirect: async (
           maker: PublicKey,
           taker: PublicKey,
-          slots: BN
+          slots: BN,
+          price: number
         ) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
@@ -483,46 +485,43 @@ export const useFermiStore = create<FermiStore>()(
           const marketPda = get().selectedMarket?.publicKey;
           if (!market || !marketPda) throw new Error("No market found!");
 
+          const makerOpenOrdersAccount =
+            await client.deserializeOpenOrderAccount(maker);
+          const takerOpenOrdersAccount =
+            await client.deserializeOpenOrderAccount(taker);
+
+          if (!makerOpenOrdersAccount || !takerOpenOrdersAccount)
+            throw new Error("Open orders not found");
+
           const makerQuoteTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.quoteMint,
-              maker
+              makerOpenOrdersAccount?.owner
             )
           );
+
           const takerQuoteTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.quoteMint,
-              taker
+              takerOpenOrdersAccount?.owner
             )
           );
           const takerBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.baseMint,
-              taker
+              takerOpenOrdersAccount?.owner
             )
           );
           const makerBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.baseMint,
-              maker
+              makerOpenOrdersAccount?.owner
             )
           );
-          const makerOpenOrders = (
-            await client.findOpenOrdersForMarket(
-              maker,
-              new PublicKey(marketPda)
-            )
-          )[0];
-          const takerOpenOrders = (
-            await client.findOpenOrdersForMarket(
-              taker,
-              new PublicKey(marketPda)
-            )
-          )[0];
 
           const args = {
             market: new PublicKey(marketPda),
@@ -534,8 +533,8 @@ export const useFermiStore = create<FermiStore>()(
             takerQuoteAccount: takerQuoteTokenAccount,
             makerBaseAccount: makerBaseTokenAccount,
             makerQuoteAccount: makerQuoteTokenAccount,
-            maker: makerOpenOrders,
-            taker: takerOpenOrders,
+            maker,
+            taker,
             slots: slots,
             limit: new BN(0),
           };
@@ -557,7 +556,21 @@ export const useFermiStore = create<FermiStore>()(
           );
 
           await client.sendAndConfirmTransaction(ixs, {});
-          console.log("Finalised successfully");
+
+          const { data, error } = await supabase
+            .from("price_feed")
+            .insert([
+              {
+                price: Number(price.toString()),
+                market: marketPda.toString(),
+              },
+            ])
+            .select();
+          if (error) console.log("error adding to price feed ", error);
+          toast.success("Order Finalised");
+          await get().actions.fetchOrderbook();
+          await get().actions.fetchEventHeap();
+          await get().actions.fetchOpenOrders();
         },
         finaliseMarketOrder: async (
           maker: PublicKey,
@@ -598,11 +611,12 @@ export const useFermiStore = create<FermiStore>()(
               taker
             )
           );
+
           const makerQuoteTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.quoteMint,
-              makerOpenOrdersAccount?.owner
+              maker
             )
           );
 
@@ -610,7 +624,7 @@ export const useFermiStore = create<FermiStore>()(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.baseMint,
-              makerOpenOrdersAccount?.owner
+              maker
             )
           );
 
