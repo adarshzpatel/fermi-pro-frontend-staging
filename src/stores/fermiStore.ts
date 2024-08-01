@@ -96,6 +96,12 @@ type FermiStore = {
       side: string,
       slot: BN
     ) => Promise<void>;
+    placeOrderAndFinalize: (
+      orderId: BN,
+      qty: BN,
+      side: "bid" | "ask",
+      maker: PublicKey,
+    ) => Promise<void>;
   };
 };
 
@@ -568,6 +574,78 @@ export const useFermiStore = create<FermiStore>()(
             .select();
           if (error) console.log("error adding to price feed ", error);
           toast.success("Order Finalised");
+          await get().actions.fetchOrderbook();
+          await get().actions.fetchEventHeap();
+          await get().actions.fetchOpenOrders();
+        },
+        placeOrderAndFinalize: async (orderId, qty, side, maker) => {
+          const client = get().client;
+          if (!client) throw new Error("Client not found");
+          const market = get().selectedMarket?.current;
+          const taker = client.walletPk;
+          const marketPublicKey = get().selectedMarket?.publicKey;
+          if (!market || !marketPublicKey) throw new Error("No market found!");
+
+          const makerBaseAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              maker
+            )
+          );
+
+          const takerBaseAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.baseMint,
+              taker
+            )
+          );
+
+          const makerQuoteAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              maker
+            )
+          );
+
+          const takerQuoteAccount = new PublicKey(
+            await checkOrCreateAssociatedTokenAccount(
+              client.provider,
+              market.quoteMint,
+              taker
+            )
+          );
+
+          const orderArgs = {
+            limit: new BN(2),
+            side: side === "bid" ? Side.Bid : Side.Ask,
+            qty: new BN(qty),
+            orderId: new BN(orderId),
+          };
+          const ixs = await client.placeOrderAndFinalize(
+            marketPublicKey,
+            market.marketAuthority,
+            market.eventHeap,
+            market.bids,
+            market.asks,
+            takerBaseAccount,
+            takerQuoteAccount,
+            makerBaseAccount,
+            makerQuoteAccount,
+            market.marketQuoteVault,
+            market.marketBaseVault,
+            maker,
+            taker,
+            orderArgs.limit,
+            orderArgs.orderId,
+            orderArgs.qty,
+            orderArgs.side
+          );
+
+          await client.sendAndConfirmTransaction(ixs);
+
           await get().actions.fetchOrderbook();
           await get().actions.fetchEventHeap();
           await get().actions.fetchOpenOrders();

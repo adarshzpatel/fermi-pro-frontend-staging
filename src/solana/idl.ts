@@ -637,6 +637,110 @@ export interface OpenbookV2 {
       };
     },
     {
+      name: "placeAndFinalize";
+      accounts: [
+        {
+          name: "market";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "marketAuthority";
+          isMut: true;
+          isSigner: false;
+          docs: ["CHECK : not usafe."];
+        },
+        {
+          name: "eventHeap";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "bids";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "asks";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "takerBaseAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "takerQuoteAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "makerBaseAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "makerQuoteAccount";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "marketVaultQuote";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "marketVaultBase";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "maker";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "taker";
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: "tokenProgram";
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: "systemProgram";
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: "limit";
+          type: "u64";
+        },
+        {
+          name: "orderid";
+          type: "u128";
+        },
+        {
+          name: "qty";
+          type: "u64";
+        },
+        {
+          name: "side";
+          type: {
+            defined: "Side";
+          };
+        }
+      ];
+      returns: {
+        option: "u128";
+      };
+    },
+    {
       name: "cancelAndPlaceOrders";
       docs: ["Cancel orders and place multiple orders."];
       accounts: [
@@ -1095,6 +1199,12 @@ export interface OpenbookV2 {
         }
       ];
       args: [
+        {
+          name: "slots";
+          type: {
+            option: "u64";
+          };
+        },
         {
           name: "limit";
           type: "u64";
@@ -3271,6 +3381,9 @@ export interface OpenbookV2 {
         kind: "enum";
         variants: [
           {
+            name: "InsufficientFunds";
+          },
+          {
             name: "SomeError";
           },
           {
@@ -4006,6 +4119,11 @@ export interface OpenbookV2 {
       code: 6003;
       name: "OpenOrdersError";
       msg: "Invalid openorders";
+    },
+    {
+      code: 6004;
+      name: "InsufficientFunds";
+      msg: "Insufficient Funds";
     }
   ];
   default: {
@@ -4637,6 +4755,110 @@ export interface OpenbookV2 {
         };
       },
       {
+        name: "placeAndFinalize";
+        accounts: [
+          {
+            name: "market";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "marketAuthority";
+            isMut: true;
+            isSigner: false;
+            docs: ["CHECK : not usafe."];
+          },
+          {
+            name: "eventHeap";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "bids";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "asks";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "takerBaseAccount";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "takerQuoteAccount";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "makerBaseAccount";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "makerQuoteAccount";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "marketVaultQuote";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "marketVaultBase";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "maker";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "taker";
+            isMut: true;
+            isSigner: false;
+          },
+          {
+            name: "tokenProgram";
+            isMut: false;
+            isSigner: false;
+          },
+          {
+            name: "systemProgram";
+            isMut: false;
+            isSigner: false;
+          }
+        ];
+        args: [
+          {
+            name: "limit";
+            type: "u64";
+          },
+          {
+            name: "orderid";
+            type: "u128";
+          },
+          {
+            name: "qty";
+            type: "u64";
+          },
+          {
+            name: "side";
+            type: {
+              defined: "Side";
+            };
+          }
+        ];
+        returns: {
+          option: "u128";
+        };
+      },
+      {
         name: "cancelAndPlaceOrders";
         docs: ["Cancel orders and place multiple orders."];
         accounts: [
@@ -5095,6 +5317,12 @@ export interface OpenbookV2 {
           }
         ];
         args: [
+          {
+            name: "slots";
+            type: {
+              option: "u64";
+            };
+          },
           {
             name: "limit";
             type: "u64";
@@ -7187,6 +7415,9 @@ export interface OpenbookV2 {
           kind: "enum";
           variants: [
             {
+              name: "InsufficientFunds";
+            },
+            {
               name: "SomeError";
             },
             {
@@ -7922,6 +8153,11 @@ export interface OpenbookV2 {
         code: 6003;
         name: "OpenOrdersError";
         msg: "Invalid openorders";
+      },
+      {
+        code: 6004;
+        name: "InsufficientFunds";
+        msg: "Insufficient Funds";
       }
     ];
   };
@@ -8565,6 +8801,110 @@ export const IDL: OpenbookV2 = {
       },
     },
     {
+      name: "placeAndFinalize",
+      accounts: [
+        {
+          name: "market",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "marketAuthority",
+          isMut: true,
+          isSigner: false,
+          docs: ["CHECK : not usafe."],
+        },
+        {
+          name: "eventHeap",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "bids",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "asks",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "takerBaseAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "takerQuoteAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "makerBaseAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "makerQuoteAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "marketVaultQuote",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "marketVaultBase",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "maker",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "taker",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "systemProgram",
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: "limit",
+          type: "u64",
+        },
+        {
+          name: "orderid",
+          type: "u128",
+        },
+        {
+          name: "qty",
+          type: "u64",
+        },
+        {
+          name: "side",
+          type: {
+            defined: "Side",
+          },
+        },
+      ],
+      returns: {
+        option: "u128",
+      },
+    },
+    {
       name: "cancelAndPlaceOrders",
       docs: ["Cancel orders and place multiple orders."],
       accounts: [
@@ -9023,6 +9363,12 @@ export const IDL: OpenbookV2 = {
         },
       ],
       args: [
+        {
+          name: "slots",
+          type: {
+            option: "u64",
+          },
+        },
         {
           name: "limit",
           type: "u64",
@@ -11199,6 +11545,9 @@ export const IDL: OpenbookV2 = {
         kind: "enum",
         variants: [
           {
+            name: "InsufficientFunds",
+          },
+          {
             name: "SomeError",
           },
           {
@@ -11935,6 +12284,11 @@ export const IDL: OpenbookV2 = {
       name: "OpenOrdersError",
       msg: "Invalid openorders",
     },
+    {
+      code: 6004,
+      name: "InsufficientFunds",
+      msg: "Insufficient Funds",
+    },
   ],
   default: {
     version: "0.1.0",
@@ -12565,6 +12919,110 @@ export const IDL: OpenbookV2 = {
         },
       },
       {
+        name: "placeAndFinalize",
+        accounts: [
+          {
+            name: "market",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "marketAuthority",
+            isMut: true,
+            isSigner: false,
+            docs: ["CHECK : not usafe."],
+          },
+          {
+            name: "eventHeap",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "bids",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "asks",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "takerBaseAccount",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "takerQuoteAccount",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "makerBaseAccount",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "makerQuoteAccount",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "marketVaultQuote",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "marketVaultBase",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "maker",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "taker",
+            isMut: true,
+            isSigner: false,
+          },
+          {
+            name: "tokenProgram",
+            isMut: false,
+            isSigner: false,
+          },
+          {
+            name: "systemProgram",
+            isMut: false,
+            isSigner: false,
+          },
+        ],
+        args: [
+          {
+            name: "limit",
+            type: "u64",
+          },
+          {
+            name: "orderid",
+            type: "u128",
+          },
+          {
+            name: "qty",
+            type: "u64",
+          },
+          {
+            name: "side",
+            type: {
+              defined: "Side",
+            },
+          },
+        ],
+        returns: {
+          option: "u128",
+        },
+      },
+      {
         name: "cancelAndPlaceOrders",
         docs: ["Cancel orders and place multiple orders."],
         accounts: [
@@ -13023,6 +13481,12 @@ export const IDL: OpenbookV2 = {
           },
         ],
         args: [
+          {
+            name: "slots",
+            type: {
+              option: "u64",
+            },
+          },
           {
             name: "limit",
             type: "u64",
@@ -15115,6 +15579,9 @@ export const IDL: OpenbookV2 = {
           kind: "enum",
           variants: [
             {
+              name: "InsufficientFunds",
+            },
+            {
               name: "SomeError",
             },
             {
@@ -15850,6 +16317,11 @@ export const IDL: OpenbookV2 = {
         code: 6003,
         name: "OpenOrdersError",
         msg: "Invalid openorders",
+      },
+      {
+        code: 6004,
+        name: "InsufficientFunds",
+        msg: "Insufficient Funds",
       },
     ],
   },
