@@ -100,7 +100,7 @@ type FermiStore = {
       orderId: BN,
       qty: BN,
       side: "bid" | "ask",
-      maker: PublicKey,
+      maker: PublicKey
     ) => Promise<void>;
   };
 };
@@ -586,6 +586,8 @@ export const useFermiStore = create<FermiStore>()(
           const marketPublicKey = get().selectedMarket?.publicKey;
           if (!market || !marketPublicKey) throw new Error("No market found!");
 
+          const takerOpenOrders = get().openOrders?.publicKey;
+
           const makerBaseAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -618,30 +620,48 @@ export const useFermiStore = create<FermiStore>()(
             )
           );
 
-          const orderArgs = {
+          const args = {
+            market: new PublicKey(marketPublicKey),
+            marketAuthority: market.marketAuthority,
+            eventHeap: market.eventHeap,
+            bids: market.bids,
+            asks: market.asks,
+            takerBaseAccount: takerBaseAccount,
+            takerQuoteAccount: takerQuoteAccount,
+            makerBaseAccount: makerBaseAccount,
+            makerQuoteAccount: makerQuoteAccount,
+            marketVaultQuote: market.marketQuoteVault,
+            marketVaultBase: market.marketBaseVault,
+            maker: maker,
+            taker: takerOpenOrders,
+            //slots: slots,
             limit: new BN(2),
             side: side === "bid" ? Side.Bid : Side.Ask,
             qty: new BN(qty),
-            orderId: new BN(orderId),
+            orderid: new BN(orderId),
           };
-          const ixs = await client.placeOrderAndFinalize(
-            marketPublicKey,
-            market.marketAuthority,
-            market.eventHeap,
-            market.bids,
-            market.asks,
-            takerBaseAccount,
-            takerQuoteAccount,
-            makerBaseAccount,
-            makerQuoteAccount,
-            market.marketQuoteVault,
-            market.marketBaseVault,
-            maker,
-            taker,
-            orderArgs.limit,
-            orderArgs.orderId,
-            orderArgs.qty,
-            orderArgs.side
+
+          console.log("ORDER ARGS : ", JSON.stringify(args, null, 2));
+
+          const ixs = await client.new_order_and_finalize(
+            args.market,
+            args.marketAuthority,
+            args.eventHeap,
+            args.bids,
+            args.asks,
+            args.takerBaseAccount,
+            args.takerQuoteAccount,
+            args.makerBaseAccount,
+            args.makerQuoteAccount,
+            args.marketVaultQuote,
+            args.marketVaultBase,
+            args.maker,
+            args.taker,
+            //new BN(2),  no slots arg
+            args.limit,
+            args.orderid,
+            args.qty,
+            args.side
           );
 
           await client.sendAndConfirmTransaction(ixs);

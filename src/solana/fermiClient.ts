@@ -608,7 +608,7 @@ export class FermiClient {
   public decodeMarket(data: Buffer): any {
     return this.program.coder.accounts.decode("Market", data);
   }
-  public async placeOrderAndFinalize(
+  public async new_order_and_finalize(
     market: PublicKey,
     marketAuthority: PublicKey,
     eventHeap: PublicKey,
@@ -635,9 +635,12 @@ export class FermiClient {
       });
 
     // Create the main instruction with the required accounts
+    const signer = this.walletPk.toString();
+    console.log("signer", signer);
     const mainInstruction = await this.program.methods
       .placeAndFinalize(limit, orderid, qty, side)
       .accounts({
+        signer,
         market,
         marketAuthority,
         eventHeap,
