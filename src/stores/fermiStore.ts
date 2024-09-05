@@ -514,6 +514,7 @@ export const useFermiStore = create<FermiStore>()(
               takerOpenOrdersAccount?.owner
             )
           );
+
           const takerBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -521,6 +522,7 @@ export const useFermiStore = create<FermiStore>()(
               takerOpenOrdersAccount?.owner
             )
           );
+
           const makerBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
@@ -578,7 +580,12 @@ export const useFermiStore = create<FermiStore>()(
           await get().actions.fetchEventHeap();
           await get().actions.fetchOpenOrders();
         },
-        placeOrderAndFinalize: async (orderId, qty, side, maker) => {
+        placeOrderAndFinalize: async (
+          orderId,
+          qty,
+          side,
+          makerOpenOrdersPk
+        ) => {
           const client = get().client;
           if (!client) throw new Error("Client not found");
           const market = get().selectedMarket?.current;
@@ -586,7 +593,14 @@ export const useFermiStore = create<FermiStore>()(
           const marketPublicKey = get().selectedMarket?.publicKey;
           if (!market || !marketPublicKey) throw new Error("No market found!");
 
+          // We assume the current user is the taker,
           const takerOpenOrders = get().openOrders?.publicKey;
+          const makerOpenOrders = await client.deserializeOpenOrderAccount(
+            makerOpenOrdersPk
+          );
+          const maker = makerOpenOrders?.owner;
+          console.log({ makerOpenOrders, maker, makerOpenOrdersPk, taker });
+          if (!maker || !taker) throw new Error("Maker or taker not found");
 
           const makerBaseAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
@@ -620,6 +634,8 @@ export const useFermiStore = create<FermiStore>()(
             )
           );
 
+          // We need to know who is maker , is the maker the open orders account or the user wallet
+
           const args = {
             market: new PublicKey(marketPublicKey),
             marketAuthority: market.marketAuthority,
@@ -632,10 +648,9 @@ export const useFermiStore = create<FermiStore>()(
             makerQuoteAccount: makerQuoteAccount,
             marketVaultQuote: market.marketQuoteVault,
             marketVaultBase: market.marketBaseVault,
-            maker: maker,
+            maker: new PublicKey(makerOpenOrdersPk),
             taker: takerOpenOrders,
-            //slots: slots,
-            limit: new BN(2),
+            limit: new BN(0),
             side: side === "bid" ? Side.Bid : Side.Ask,
             qty: new BN(qty),
             orderid: new BN(orderId),
@@ -643,7 +658,7 @@ export const useFermiStore = create<FermiStore>()(
 
           console.log("ORDER ARGS : ", JSON.stringify(args, null, 2));
 
-          const ixs = await client.new_order_and_finalize(
+          const [ixs] = await client.new_order_and_finalize(
             args.market,
             args.marketAuthority,
             args.eventHeap,
@@ -664,7 +679,7 @@ export const useFermiStore = create<FermiStore>()(
             args.side
           );
 
-          await client.sendAndConfirmTransaction(ixs);
+          await client.sendAndConfirmTransaction([ixs]);
 
           await get().actions.fetchOrderbook();
           await get().actions.fetchEventHeap();

@@ -608,6 +608,7 @@ export class FermiClient {
   public decodeMarket(data: Buffer): any {
     return this.program.coder.accounts.decode("Market", data);
   }
+
   public async new_order_and_finalize(
     market: PublicKey,
     marketAuthority: PublicKey,
@@ -622,12 +623,11 @@ export class FermiClient {
     marketVaultBase: PublicKey,
     maker: PublicKey,
     taker: PublicKey,
-    //slots: BN,
     limit: BN,
     orderid: BN,
     qty: BN,
-    side: PlaceOrderArgs["side"]
-  ): Promise<TransactionInstruction[]> {
+    side: PlaceOrderArgs["side"],
+  ): Promise<[TransactionInstruction, Signer[]]> {
     // Create the additional compute budget instructions
     const computeUnitLimitInstruction =
       ComputeBudgetProgram.setComputeUnitLimit({
@@ -635,8 +635,7 @@ export class FermiClient {
       });
 
     // Create the main instruction with the required accounts
-    const signer = this.walletPk.toString();
-    console.log("signer", signer);
+    const signer = this.walletPk;
     const mainInstruction = await this.program.methods
       .placeAndFinalize(limit, orderid, qty, side)
       .accounts({
@@ -665,7 +664,9 @@ export class FermiClient {
     // Prepend the compute budget instruction
     instructions.unshift(computeUnitLimitInstruction);
 
-    return instructions;
+    const signers: Signer[] = [];
+
+    return [mainInstruction, signers];
   }
 
   public async placeOrderIx(

@@ -46,9 +46,7 @@ export default function Home() {
   useLayoutEffect(() => {
     if (!marketParam) {
       const storedMarket = localStorage.getItem("selectedMarket");
-      const defaultMarket = storedMarket
-        ? JSON.parse(storedMarket)
-        : MARKETS[0];
+      const defaultMarket = MARKETS[0];
       router.replace(`/?market=${defaultMarket.marketPda}`);
     }
   }, [marketParam, router]);
