@@ -600,7 +600,7 @@ export const useFermiStore = create<FermiStore>()(
           );
           const maker = makerOpenOrders?.owner;
           console.log({ makerOpenOrders, maker, makerOpenOrdersPk, taker });
-          if (!maker || !taker) throw new Error("Maker or taker not found");
+          if (!maker || !taker || !takerOpenOrders || !makerOpenOrders) throw new Error("Maker or taker not found");
 
           const makerBaseAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
