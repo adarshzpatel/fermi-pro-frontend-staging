@@ -151,6 +151,8 @@ export const checkOrCreateAssociatedTokenAccount = async (
   mint: anchor.web3.PublicKey,
   owner: anchor.web3.PublicKey
 ): Promise<string> => {
+  
+
   // Find the ATA for the given mint and owner
   const ata = await spl.getAssociatedTokenAddress(mint, owner, true);
 

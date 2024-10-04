@@ -1,8 +1,7 @@
 export const RPC_URL = {
   devnet: "https://api.devnet.solana.com",
 };
-export const FERMI_DEVNET_PROGRAM_ID =
-  "61iWk6RE2TdZXDgKFpfLAsqTswXBdXHfgoE2UVcd6EHJ";
+export const FERMI_DEVNET_PROGRAM_ID = "DrgsHv79i7B9YBW5jNcgQmXWHvur3MbRGKrbCauBm79z";
 
 export type MarketType = {
   baseTokenName: string;
@@ -14,6 +13,6 @@ export const MARKETS: MarketType[] = [
   {
     baseTokenName: "JUP",
     quoteTokenName: "USDC",
-    marketPda: "BYRtfsJ8g8pieJuCFf2Gub7KmtNMun1eCDeNzt6ne13T",
+    marketPda: "awTecE3H3MasJwWP9MG1cYhtZ95ozvtrfWWxXeXUo4u",
   },
 ];

@@ -41,8 +41,12 @@ export default function Home() {
     fetchOpenOrders,
     fetchOrderbook,
     connectClientToWallet,
+
   } = useFermiStore((s) => s.actions);
 
+  useEffect(() => {
+    console.log("client wallet", client?.walletPk?.toString())
+  }, [client])
   useLayoutEffect(() => {
     if (!marketParam) {
       const storedMarket = localStorage.getItem("selectedMarket");

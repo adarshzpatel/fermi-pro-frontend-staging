@@ -205,7 +205,6 @@ export const useFermiStore = create<FermiStore>()(
               };
             });
           }
-          console.log("OPEN ORDERS", openOrdersAccPk.toString());
           set((s) => {
             s.openOrders = {
               publicKey: openOrdersAccPk,
@@ -289,8 +288,7 @@ export const useFermiStore = create<FermiStore>()(
             limit: 5,
           };
 
-          // Get the user's token accounts
-          console.log("ORDER ARGS", JSON.stringify(orderArgs, null, 2));
+
 
           const userBaseTokenAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
@@ -332,7 +330,7 @@ export const useFermiStore = create<FermiStore>()(
             // If auto settlement is true, finalise the order
             const eventHeap = get().eventHeap;
 
-            const matchedEvent = eventHeap?.fillDirectEvents?.find(
+            const matchedEvent = eventHeap?.fillDirectEvents?.findLast(
               (e: any) => e.taker.toString() === client.walletPk.toString()
             );
 
@@ -600,7 +598,8 @@ export const useFermiStore = create<FermiStore>()(
           );
           const maker = makerOpenOrders?.owner;
           console.log({ makerOpenOrders, maker, makerOpenOrdersPk, taker });
-          if (!maker || !taker || !takerOpenOrders || !makerOpenOrders) throw new Error("Maker or taker not found");
+          if (!maker || !taker || !takerOpenOrders || !makerOpenOrders)
+            throw new Error("Maker or taker not found");
 
           const makerBaseAccount = new PublicKey(
             await checkOrCreateAssociatedTokenAccount(
@@ -696,6 +695,8 @@ export const useFermiStore = create<FermiStore>()(
           const marketPda = get().selectedMarket?.publicKey;
           if (!market || !marketPda) throw new Error("No market found!");
 
+          /* Taker is client wallet but maker is open orders account */
+
           const makerOpenOrdersAccount =
             await client.deserializeOpenOrderAccount(maker);
 
@@ -729,7 +730,7 @@ export const useFermiStore = create<FermiStore>()(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.quoteMint,
-              maker
+              makerOpenOrdersAccount.owner
             )
           );
 
@@ -737,10 +738,9 @@ export const useFermiStore = create<FermiStore>()(
             await checkOrCreateAssociatedTokenAccount(
               client.provider,
               market.baseMint,
-              maker
+              makerOpenOrdersAccount.owner
             )
           );
-
           const args = {
             market: new PublicKey(marketPda),
             marketAuthority: market.marketAuthority,
