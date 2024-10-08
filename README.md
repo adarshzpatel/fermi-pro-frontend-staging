@@ -1,4 +1,6 @@
 
+# how to run on local 
+
 1. git clone 
 2. npm install 
 3. add `.env.local` file to project directory.
